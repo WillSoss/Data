@@ -4,6 +4,11 @@
     <TargetFramework>net7.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
+    <Title>$(AssemblyName)</Title>
+    <Authors>WillSossamon</Authors>
+    <Description>A DI-friendly database transaction context.</Description>
+    <Copyright>© 2023 William Sossamon</Copyright>
+    <RepositoryUrl>https://github.com/WillSoss/data</RepositoryUrl>
   </PropertyGroup>
 
   <ItemGroup>

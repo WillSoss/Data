@@ -8,6 +8,7 @@
     <Authors>WillSossamon</Authors>
     <Description>Automate database creation from SQL scripts.</Description>
     <Copyright>© 2023 William Sossamon</Copyright>
+    <PackageProjectUrl>https://github.com/WillSoss/data</PackageProjectUrl>
   </PropertyGroup>
 
   <ItemGroup>

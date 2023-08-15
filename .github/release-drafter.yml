@@ -5,6 +5,10 @@ autolabeler:
     files:
       - '*.md'
       - '*.yml'
+    title:
+      - '/docs\/.+/'
+    body:
+      - '/docs\/.+/'
   - label: 'bug'
     branch:
       - '/fix\/.+/'

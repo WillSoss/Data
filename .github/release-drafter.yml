@@ -1,5 +1,20 @@
 name-template: 'v$RESOLVED_VERSION 🌈'
 tag-template: 'v$RESOLVED_VERSION'
+autolabeler:
+  - label: 'chore'
+    files:
+      - '*.md'
+      - '*.yml'
+  - label: 'bug'
+    branch:
+      - '/fix\/.+/'
+    title:
+      - '/fix/i'
+  - label: 'feature'
+    title:
+      - '/feat\/.+/'
+    body:
+      - '/feat\/.+/'
 categories:
   - title: '🚀 Features'
     labels:

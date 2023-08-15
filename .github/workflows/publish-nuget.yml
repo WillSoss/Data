@@ -12,10 +12,10 @@ jobs:
       - uses: actions/checkout@v2
 
       - name: Package WillSoss.Data
-        run: dotnet pack WillSoss.Data/WillSoss.Data.csproj -c Release -o feeds/nuget
+        run: dotnet pack WillSoss.Data/WillSoss.Data.csproj -c Release -o feeds/nuget /p:Version=$RESOLVED_VERSION
 
       - name: Package WillSoss.Data.Sql
-        run: dotnet pack WillSoss.Data.Sql/WillSoss.Data.Sql.csproj -c Release -o feeds/nuget
+        run: dotnet pack WillSoss.Data.Sql/WillSoss.Data.Sql.csproj -c Release -o feeds/nuget /p:Version=$RESOLVED_VERSION
 
       - name: Push to Nuget
         run: find feeds/nuget -name '*.nupkg' | xargs -i dotnet nuget push {} -s https://api.nuget.org/v3/index.json -k ${{ secrets.NUGET_API_KEY }}

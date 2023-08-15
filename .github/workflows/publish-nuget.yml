@@ -11,11 +11,14 @@ jobs:
     steps:
       - uses: actions/checkout@v2
 
+      - name: Set VERSION variable from tag
+        run: echo "VERSION=${GITHUB_REF/refs\/tags\/v/}" >> $GITHUB_ENV
+
       - name: Package WillSoss.Data
-        run: dotnet pack WillSoss.Data/WillSoss.Data.csproj -c Release -o feeds/nuget /p:Version=$RESOLVED_VERSION
+        run: dotnet pack WillSoss.Data/WillSoss.Data.csproj -c Release -o feeds/nuget /p:Version=${VERSION}
 
       - name: Package WillSoss.Data.Sql
-        run: dotnet pack WillSoss.Data.Sql/WillSoss.Data.Sql.csproj -c Release -o feeds/nuget /p:Version=$RESOLVED_VERSION
+        run: dotnet pack WillSoss.Data.Sql/WillSoss.Data.Sql.csproj -c Release -o feeds/nuget /p:Version=${VERSION}
 
       - name: Push to Nuget
         run: find feeds/nuget -name '*.nupkg' | xargs -i dotnet nuget push {} -s https://api.nuget.org/v3/index.json -k ${{ secrets.NUGET_API_KEY }}

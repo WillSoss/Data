@@ -1,0 +1,31 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.5.33414.496
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WillSoss.Data.Sql", "WillSoss.Data.Sql\WillSoss.Data.Sql.csproj", "{90570786-7984-47E7-9CF9-D1B91D88DFE7}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WillSoss.Data", "WillSoss.Data\WillSoss.Data.csproj", "{972A6C9A-4832-473C-8A72-BF9012ED568E}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{90570786-7984-47E7-9CF9-D1B91D88DFE7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{90570786-7984-47E7-9CF9-D1B91D88DFE7}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{90570786-7984-47E7-9CF9-D1B91D88DFE7}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{90570786-7984-47E7-9CF9-D1B91D88DFE7}.Release|Any CPU.Build.0 = Release|Any CPU
+		{972A6C9A-4832-473C-8A72-BF9012ED568E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{972A6C9A-4832-473C-8A72-BF9012ED568E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{972A6C9A-4832-473C-8A72-BF9012ED568E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{972A6C9A-4832-473C-8A72-BF9012ED568E}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {A8C49CCB-1B0D-4E9C-A99A-117DBC7729F1}
+	EndGlobalSection
+EndGlobal

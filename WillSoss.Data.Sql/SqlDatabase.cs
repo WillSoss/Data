@@ -12,7 +12,13 @@ namespace WillSoss.Data.Sql
 		readonly int? _commandTimeout;
 		readonly ILogger<SqlDatabase>? _logger;
 
+		/// <summary>
+		/// List of create scripts to run in order
+		/// </summary>
 		public List<Script> CreateScripts { get; } = new List<Script>();
+		/// <summary>
+		/// List of clear scripts to run in order
+		/// </summary>
 		public List<Script> ClearScripts { get; } = new List<Script>();
 
 		public string ConnectionString => _connectionString;

@@ -6,25 +6,32 @@ namespace WillSoss.Data
 {
     public abstract class Database
     {
-        private readonly ILogger _logger;
         private IEnumerable<Script> _buildScripts;
+        private readonly int _commandTimeout;
+        private readonly int _postCreateDelay;
+        private readonly int _postDropDelay;
+        private readonly ILogger _logger;
 
         public string ConnectionString { get; }
+        public int CommandTimeout => _commandTimeout;
         public Script CreateScript { get; private set; }
         public IEnumerable<Script> BuildScripts => _buildScripts.OrderBy(s => s.Version);
         public Script ResetScript { get; private set; }
         public Script DropScript { get; private set; }
 
-        protected Database(string connectionString, Script create, IEnumerable<Script> build, Script reset, Script drop, ILogger logger)
+        protected Database(string connectionString, IEnumerable<Script> buildScripts, DatabaseOptions options, ILogger logger)
         {
             if (string.IsNullOrWhiteSpace(connectionString))
                 throw new ArgumentNullException(nameof(connectionString));
 
             ConnectionString = connectionString;
-            CreateScript = create ?? throw new ArgumentNullException(nameof(create));
-            _buildScripts = build ?? throw new ArgumentNullException(nameof(build));
-            ResetScript = reset ?? throw new ArgumentNullException(nameof(reset));
-            DropScript = drop ?? throw new ArgumentNullException(nameof(drop));
+            CreateScript = options?.CreateScript ?? throw new ArgumentNullException(nameof(options.CreateScript));
+            _buildScripts = buildScripts ?? throw new ArgumentNullException(nameof(buildScripts));
+            ResetScript = options?.ResetScript ?? throw new ArgumentNullException(nameof(options.ResetScript));
+            DropScript = options?.DropScript ?? throw new ArgumentNullException(nameof(options.DropScript));
+            _commandTimeout = options?.CommandTimeout ?? 90;
+            _postCreateDelay = options?.PostCreateDelay ?? 0;
+            _postDropDelay = options?.PostDropDelay ?? 0;
             _logger = logger;
         }
 
@@ -37,6 +44,12 @@ namespace WillSoss.Data
             await ExecuteScriptAsync(CreateScript, db, replacementTokens: GetTokens());
 
             _logger?.LogInformation($"Finished creating database {GetDatabaseName()}");
+
+            if (_postCreateDelay > 0)
+            {
+                _logger?.LogInformation($"Waiting {_postCreateDelay} seconds for resource deployment...");
+                await Task.Delay(TimeSpan.FromSeconds(_postCreateDelay));
+            }
         }
 
         public virtual async Task Build()
@@ -80,6 +93,12 @@ namespace WillSoss.Data
             await ExecuteScriptAsync(DropScript, db, replacementTokens: GetTokens());
 
             _logger?.LogInformation($"Finished dropping database {GetDatabaseName()}");
+
+            if (_postDropDelay > 0)
+            {
+                _logger?.LogInformation($"Waiting {_postDropDelay} seconds for resource deployment...");
+                await Task.Delay(TimeSpan.FromSeconds(_postDropDelay));
+            }
         }
 
         public async Task ExecuteScriptsAsync(IEnumerable<Script> scripts, DbConnection db, DbTransaction? tx = null, Dictionary<string, string>? replacementTokens = null)
@@ -95,8 +114,11 @@ namespace WillSoss.Data
 
         public async Task ExecuteScriptAsync(string sql, DbConnection db, DbTransaction? tx = null, Dictionary<string, string>? replacementTokens = null)
         {
-            foreach (var token in replacementTokens)
-                sql = sql.Replace($"{{{{{token.Key}}}}}", token.Value);
+            if (replacementTokens != null)
+            {
+                foreach (var token in replacementTokens)
+                    sql = sql.Replace($"{{{{{token.Key}}}}}", token.Value);
+            }
 
             await ExecuteScriptAsync(sql, db, tx);
         }

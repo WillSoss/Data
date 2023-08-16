@@ -15,15 +15,20 @@ namespace WillSoss.Data.Sql
 		public static readonly Script DefaultResetScript = new Script(DefaultScriptAssembly, DefaultScriptNamespace, "reset.sql");
 		public static readonly Script DefaultDropScript = new Script(DefaultScriptAssembly, DefaultScriptNamespace, "drop.sql");
 
+		private readonly ILogger<SqlDatabase>? _logger;
 
-		readonly int? _commandTimeout;
-		readonly ILogger<SqlDatabase>? _logger;
-
-		public SqlDatabase(string connectionString, IEnumerable<Script> build, Script? create = null, Script? reset = null, Script? drop = null, int? commandTimeout = null, ILogger<SqlDatabase> logger = null)
-			: base(connectionString, create ?? DefaultCreateScript, build, reset ?? DefaultResetScript, drop ?? DefaultDropScript, logger)
+		public SqlDatabase(string connectionString, IEnumerable<Script> build, DatabaseOptions? options, ILogger<SqlDatabase> logger)
+			: base(connectionString, build, new DatabaseOptions()
+			{
+				CreateScript = options?.CreateScript ?? DefaultCreateScript,
+				ResetScript = options?.ResetScript ?? DefaultResetScript,
+				DropScript = options?.DropScript ?? DefaultDropScript,
+				CommandTimeout = options?.CommandTimeout,
+				PostCreateDelay = options?.PostCreateDelay,
+				PostDropDelay = options?.PostDropDelay
+			}, logger)
 
 		{
-			_commandTimeout = commandTimeout;
 			_logger = logger;
 		}
 
@@ -44,7 +49,7 @@ namespace WillSoss.Data.Sql
 		{
 			try
 			{
-				await db.ExecuteAsync(sql, transaction: tx, commandTimeout: _commandTimeout);
+				await db.ExecuteAsync(sql, transaction: tx, commandTimeout: CommandTimeout);
 			}
 			catch (SqlException ex)
 			{

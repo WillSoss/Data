@@ -22,15 +22,15 @@ namespace WillSoss.Data.Tests
 
             var expected = new (string version, string file)[]
             {
-                ("1", "1 1.sql"),
-                ("4.1", "4.1 two.sql"),
-                ("5.3", "5.3 three.sql"),
-                ("5.6.7", "5.6.7-four.sql"),
-                ("5.6.7.8", "5.6.7.8-five.sql"),
-                ("6", "6- _ six.sql"),
-                ("7", "7 seven.sql"),
-                ("8", "8_eight.SQL"),
-                ("9", "9-nine.sql")
+                ("1", "1"),
+                ("4.1", "two"),
+                ("5.3", "three"),
+                ("5.6.7", "four"),
+                ("5.6.7.8", "five"),
+                ("6", "six"),
+                ("7", "seven"),
+                ("8", "eight"),
+                ("9", "nine")
             };
 
             var parser = new VersionedScriptNameParser(files);

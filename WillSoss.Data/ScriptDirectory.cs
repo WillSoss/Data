@@ -2,10 +2,10 @@
 {
     public class ScriptDirectory
     {
-        readonly List<(Version Version, Script Script)> scripts = new List<(Version, Script)>();
+        readonly List<Script> scripts = new List<Script>();
 
         public string Path { get; }
-        public IEnumerable<Script> Scripts => scripts.OrderBy(i => i.Version).Select(i => i.Script);
+        public IEnumerable<Script> Scripts => scripts.OrderBy(s => s.Version);
 
         public ScriptDirectory(string path)
         { 
@@ -17,15 +17,14 @@
 
             Path = path;
 
-            foreach ((string ver, string file) in new VersionedScriptNameParser(Directory.EnumerateFiles(Path, "*.sql")))
+            foreach (var file in Directory.EnumerateFiles(Path, "*.sql"))
             {
-                // Version class requires at least major.minor
-                var clean = ver.IndexOf('.') < 0 ? $"{ver}.0" : ver;
-
-                var version = Version.Parse(clean);
                 var script = new Script(file);
 
-                scripts.Add((version, script));
+                if (!script.IsVersioned)
+                    throw new InvalidScriptNameException(file, "Scripts must be named in the format '#[.#[.#[.#]]]-name.sql'");
+
+                scripts.Add(script);
             }
         }
     }

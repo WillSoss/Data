@@ -9,6 +9,9 @@ namespace WillSoss.Data
         static readonly Regex _go = new Regex(@"^\s*go\s*$", RegexOptions.Compiled | RegexOptions.Multiline | RegexOptions.IgnoreCase);
         private readonly string[] _batches;
 
+        public string Name { get; }
+        public Version Version { get; }
+        public bool IsVersioned => Version != new Version(0, 0);
         public string Location { get; }
         public string FileName { get; }
         public string Body { get; }
@@ -21,6 +24,20 @@ namespace WillSoss.Data
 
             if (!File.Exists(path))
                 throw new FileNotFoundException("File not found.", path);
+
+            string? version;
+            string? name;
+            if (VersionedScriptNameParser.TryParse(Path.GetFileName(path), out version, out name))
+            {
+                // Version class requires at least major.minor
+                Version = Version.Parse(version!.IndexOf('.') < 0 ? $"{version}.0" : version);
+                Name = name!;
+            }
+            else
+            {
+                Version = new Version(0, 0);
+                Name = Path.GetFileNameWithoutExtension(path);
+            }
 
             using var stream = File.OpenRead(path);
 

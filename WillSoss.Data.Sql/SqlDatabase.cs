@@ -15,7 +15,7 @@ namespace WillSoss.Data.Sql
 		/// <summary>
 		/// List of create scripts to run in order
 		/// </summary>
-		public List<Script> BuildScripts { get; } = new List<Script>();
+		public IEnumerable<Script> BuildScripts { get; } = new List<Script>();
 		/// <summary>
 		/// List of clear scripts to run in order
 		/// </summary>

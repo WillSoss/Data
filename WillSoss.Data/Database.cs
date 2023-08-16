@@ -39,9 +39,10 @@ namespace WillSoss.Data
         {
             _logger.LogInformation($"Creating database {GetDatabaseName()}");
 
-            using var db = GetConnectionWithoutDatabase();
-            
-            await ExecuteScriptAsync(CreateScript, db, replacementTokens: GetTokens());
+            using (var db = GetConnectionWithoutDatabase())
+            {
+                await ExecuteScriptAsync(CreateScript, db, replacementTokens: GetTokens());
+            }
 
             _logger?.LogInformation($"Finished creating database {GetDatabaseName()}");
 
@@ -49,6 +50,13 @@ namespace WillSoss.Data
             {
                 _logger?.LogInformation($"Waiting {_postCreateDelay} seconds for resource deployment...");
                 await Task.Delay(TimeSpan.FromSeconds(_postCreateDelay));
+            }
+
+            _logger.LogInformation($"Adding migration schema to database {GetDatabaseName()}");
+
+            using (var db = GetConnection())
+            {
+                await ExecuteScriptAsync(GetMigrationsTableScript(), db, replacementTokens: GetTokens());
             }
         }
 
@@ -62,7 +70,7 @@ namespace WillSoss.Data
 
             using var tx = db.BeginTransaction();
 
-            await ExecuteScriptsAsync(BuildScripts, db, tx, GetTokens());
+            await ExecuteScriptsAsync(BuildScripts, db, tx, GetTokens(), true);
 
             tx.Commit();
 
@@ -101,11 +109,17 @@ namespace WillSoss.Data
             }
         }
 
-        public async Task ExecuteScriptsAsync(IEnumerable<Script> scripts, DbConnection db, DbTransaction? tx = null, Dictionary<string, string>? replacementTokens = null)
+        public async Task ExecuteScriptsAsync(IEnumerable<Script> scripts, DbConnection db, DbTransaction? tx = null, Dictionary<string, string>? replacementTokens = null, bool recordMigration = false)
         {
             foreach (var script in scripts)
+            {
                 await ExecuteScriptAsync(script, db, tx, replacementTokens);
+
+                if (recordMigration)
+                    await RecordMigration(script, db, tx);
+            }
         }
+
         public async Task ExecuteScriptAsync(Script script, DbConnection db, DbTransaction? tx = null, Dictionary<string, string>? replacementTokens = null)
         {
             foreach (string batch in script.Batches)
@@ -133,5 +147,8 @@ namespace WillSoss.Data
         protected abstract DbConnection GetConnection();
         protected abstract DbConnection GetConnectionWithoutDatabase();
         protected abstract string GetDatabaseName();
+        protected abstract Script GetMigrationsTableScript();
+
+        protected abstract Task RecordMigration(Script script, DbConnection db, DbTransaction? tx = null);
     }
 }

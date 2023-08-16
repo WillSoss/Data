@@ -45,7 +45,21 @@ namespace WillSoss.Data.Sql
 
         protected override string GetDatabaseName() => new SqlConnectionStringBuilder(ConnectionString).InitialCatalog;
 
-		protected override async Task ExecuteScriptAsync(string sql, DbConnection db, DbTransaction? tx = null)
+		protected override Script GetMigrationsTableScript() => new Script(DefaultScriptAssembly, DefaultScriptNamespace, "build-migration-table.sql");
+
+        protected override async Task RecordMigration(Script script, DbConnection db, DbTransaction? tx = null)
+        {
+			await db.ExecuteAsync("insert into cfg.migration values (@major, @minor, @build, @rev, @desc);", new
+			{
+				major = script.Version.Major,
+				minor = script.Version.Minor,
+				build = Math.Max(script.Version.Build, 0),
+				rev = Math.Max(script.Version.Revision, 0),
+				desc = script.Name
+			}, tx, CommandTimeout);
+        }
+
+        protected override async Task ExecuteScriptAsync(string sql, DbConnection db, DbTransaction? tx = null)
 		{
 			try
 			{

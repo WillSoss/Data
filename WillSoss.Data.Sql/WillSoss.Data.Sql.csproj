@@ -12,12 +12,14 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="build-migration-table.sql" />
     <None Remove="create.sql" />
     <None Remove="drop.sql" />
     <None Remove="reset.sql" />
   </ItemGroup>
 
   <ItemGroup>
+    <EmbeddedResource Include="build-migration-table.sql" />
     <EmbeddedResource Include="drop.sql" />
     <EmbeddedResource Include="create.sql" />
     <EmbeddedResource Include="reset.sql" />

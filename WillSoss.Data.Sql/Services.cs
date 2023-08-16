@@ -11,5 +11,12 @@ namespace WillSoss.Data.Sql
 
             return services;
         }
+
+        public static IServiceCollection AddAzureSqlDatabase(this IServiceCollection services, string connectionString, string buildScriptsDirectory, DatabaseOptions? options = null)
+        {
+            services.AddScoped<Database>(s => new AzureSqlDatabase(connectionString, new ScriptDirectory(buildScriptsDirectory).Scripts, options, s.GetRequiredService<ILogger<AzureSqlDatabase>>()));
+
+            return services;
+        }
     }
 }

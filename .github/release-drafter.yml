@@ -13,11 +13,15 @@ autolabeler:
     branch:
       - '/fix\/.+/'
     title:
-      - '/fix/i'
+      - '/fix.+/'
+    body:
+      - '/fix.+/'
   - label: 'feature'
     title:
-      - '/feat\/.+/'
+      - '/feat.+/'
     body:
+      - '/feat.+/'
+    branch:
       - '/feat\/.+/'
 categories:
   - title: '🚀 Features'

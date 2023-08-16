@@ -49,7 +49,7 @@ namespace WillSoss.Data.Sql
 
         protected override async Task RecordMigration(Script script, DbConnection db, DbTransaction? tx = null)
         {
-			await db.ExecuteAsync("insert into cfg.migration values (@major, @minor, @build, @rev, @desc);", new
+			await db.ExecuteAsync("insert into cfg.migration (major, minor, build, rev, [description]) values (@major, @minor, @build, @rev, @desc);", new
 			{
 				major = script.Version.Major,
 				minor = script.Version.Minor,

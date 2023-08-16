@@ -12,6 +12,18 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="create.sql" />
+    <None Remove="drop.sql" />
+    <None Remove="reset.sql" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="drop.sql" />
+    <EmbeddedResource Include="create.sql" />
+    <EmbeddedResource Include="reset.sql" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="dapper" Version="2.0.143" />
     <PackageReference Include="microsoft.data.sqlclient" Version="5.1.1" />
     <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="7.0.1" />

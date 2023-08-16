@@ -8,7 +8,7 @@ namespace WillSoss.Data
 {
     internal class VersionedScriptNameParser : IEnumerable<(string version, string file)>
     {
-        private static readonly Regex scriptPattern = new Regex(@"^(?<version>\d+(\.\d+){0,3})[-_\s]+(?<name>\w+)*\.sql$", RegexOptions.Compiled | RegexOptions.IgnoreCase);
+        private static readonly Regex scriptPattern = new Regex(@"^(?<version>\d+(\.\d+){0,3})[-_\s]+(?<name>[-_\s\w]+)*\.sql$", RegexOptions.Compiled | RegexOptions.IgnoreCase);
 
         internal static (string version, string name) Parse(string file)
         {

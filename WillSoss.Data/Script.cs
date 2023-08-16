@@ -2,16 +2,17 @@
 using System.Text;
 using System.Text.RegularExpressions;
 
-namespace WillSoss.Data.Sql
+namespace WillSoss.Data
 {
     public class Script
     {
-        static readonly Regex goEx = new Regex(@"^\s*go\s*$", RegexOptions.Compiled | RegexOptions.Multiline | RegexOptions.IgnoreCase);
-        
-        public string Location { get; private init; }
-        public string FileName { get; private init; }
-        public string Body { get; private init; }
-        public string[] Batches { get; private init; }
+        static readonly Regex _go = new Regex(@"^\s*go\s*$", RegexOptions.Compiled | RegexOptions.Multiline | RegexOptions.IgnoreCase);
+        private readonly string[] _batches;
+
+        public string Location { get; }
+        public string FileName { get; }
+        public string Body { get; }
+        public IEnumerable<string> Batches { get { return _batches; } }
 
         public Script(string path)
         {
@@ -24,7 +25,7 @@ namespace WillSoss.Data.Sql
             using var stream = File.OpenRead(path);
 
             Body = ReadStream(stream);
-            Batches = GetBatches(Body);
+            _batches = GetBatches(Body);
 
             Location = Path.GetDirectoryName(path)!;
             FileName = Path.GetFileName(path);
@@ -43,7 +44,7 @@ namespace WillSoss.Data.Sql
             }
 
             Body = ReadStream(stream);
-            Batches = GetBatches(Body);
+            _batches = GetBatches(Body);
 
             Location = resource;
             FileName = filename;
@@ -55,6 +56,6 @@ namespace WillSoss.Data.Sql
             return reader.ReadToEnd();
         }
 
-        string[] GetBatches(string script) => goEx.Split(script).Where(c => !goEx.IsMatch(c) && !string.IsNullOrWhiteSpace(c)).ToArray();
+        string[] GetBatches(string script) => _go.Split(script).Where(c => !_go.IsMatch(c) && !string.IsNullOrWhiteSpace(c)).ToArray();
     }
 }

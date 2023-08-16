@@ -3,9 +3,11 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.5.33414.496
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WillSoss.Data.Sql", "WillSoss.Data.Sql\WillSoss.Data.Sql.csproj", "{90570786-7984-47E7-9CF9-D1B91D88DFE7}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WillSoss.Data.Sql", "WillSoss.Data.Sql\WillSoss.Data.Sql.csproj", "{90570786-7984-47E7-9CF9-D1B91D88DFE7}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WillSoss.Data", "WillSoss.Data\WillSoss.Data.csproj", "{972A6C9A-4832-473C-8A72-BF9012ED568E}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WillSoss.Data", "WillSoss.Data\WillSoss.Data.csproj", "{972A6C9A-4832-473C-8A72-BF9012ED568E}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WillSoss.Data.Tests", "WillSoss.Data.Tests\WillSoss.Data.Tests.csproj", "{A802DD99-CD5B-4A01-9868-5DE0CF0C51A6}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -21,6 +23,10 @@ Global
 		{972A6C9A-4832-473C-8A72-BF9012ED568E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{972A6C9A-4832-473C-8A72-BF9012ED568E}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{972A6C9A-4832-473C-8A72-BF9012ED568E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A802DD99-CD5B-4A01-9868-5DE0CF0C51A6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A802DD99-CD5B-4A01-9868-5DE0CF0C51A6}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A802DD99-CD5B-4A01-9868-5DE0CF0C51A6}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A802DD99-CD5B-4A01-9868-5DE0CF0C51A6}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

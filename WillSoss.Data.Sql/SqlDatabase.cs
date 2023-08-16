@@ -15,7 +15,7 @@ namespace WillSoss.Data.Sql
 		/// <summary>
 		/// List of create scripts to run in order
 		/// </summary>
-		public List<Script> CreateScripts { get; } = new List<Script>();
+		public List<Script> BuildScripts { get; } = new List<Script>();
 		/// <summary>
 		/// List of clear scripts to run in order
 		/// </summary>
@@ -47,12 +47,6 @@ namespace WillSoss.Data.Sql
             _logger.LogInformation($"Database '{database}'{(exists ? " exists" : " does not exist")}.");
 
 			return exists;
-		}
-
-		public async Task RebuildAsync()
-		{
-			await DropAsync();
-			await BuildAsync();
 		}
 
 		public async Task BuildAsync()
@@ -95,7 +89,7 @@ namespace WillSoss.Data.Sql
 
 			_logger?.LogInformation($"Running create scripts.");
 
-			await ExecuteScriptsAsync(CreateScripts, db);
+			await ExecuteScriptsAsync(BuildScripts, db);
 
             _logger?.LogInformation($"Finished running create scripts.");
         }

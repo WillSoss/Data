@@ -17,7 +17,8 @@ begin
         constraint pk_migration primary key clustered (major, minor, build, rev)
     );
 
-    insert into cfg.migration values (0, 0, 0, 0, 'Database Created');
+    insert into cfg.migration (major, minor, build, rev, [description], applied_at) values 
+        (0, 0, 0, 0, 'Database Created', getutcdate());
 
 end;
 go

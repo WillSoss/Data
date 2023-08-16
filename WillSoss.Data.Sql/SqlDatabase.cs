@@ -1,7 +1,6 @@
 ﻿using Dapper;
 using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Logging;
-using System.Data;
 using System.Data.Common;
 using System.Reflection;
 

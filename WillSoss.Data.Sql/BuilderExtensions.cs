@@ -6,7 +6,8 @@ using System.Threading.Tasks;
 
 namespace WillSoss.Data.Sql
 {
-    internal class BuilderExtensions
+    public static class BuilderExtensions
     {
+
     }
 }

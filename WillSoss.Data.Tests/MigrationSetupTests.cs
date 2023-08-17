@@ -6,13 +6,20 @@ using System.Threading.Tasks;
 
 namespace WillSoss.Data.Tests
 {
-    public class IntegrationTests : IClassFixture<IntegrationTestFixture>
+    public class MigrationSetupTests : IClassFixture<IntegrationTestFixture>
     {
-        private readonly IntegrationTestFixture Fixture;
+        private readonly IntegrationTestFixture _fixture;
 
-        public IntegrationTests(IntegrationTestFixture fixture)
+        public MigrationSetupTests(IntegrationTestFixture fixture)
         {
-            Fixture = fixture;
+            _fixture = fixture;
+        }
+
+        [Fact]
+        public async Task ShouldCreateMigrationsSchema()
+        {
+
+
         }
     }
 }

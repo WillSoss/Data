@@ -1,6 +1,7 @@
 ﻿using Microsoft.Extensions.Logging;
 using System.Data;
 using System.Data.Common;
+using System.Linq;
 
 namespace WillSoss.Data
 {
@@ -60,7 +61,11 @@ namespace WillSoss.Data
             }
         }
 
-        public virtual async Task Build()
+        /// <summary>
+        /// Builds the database using the <see cref="BuildScripts"/>.
+        /// </summary>
+        /// <param name="version">Applies builds scripts up to the specified version.</param>
+        public virtual async Task Build(Version? version = null)
         {
             _logger.LogInformation($"Building database {GetDatabaseName()}");
 
@@ -70,7 +75,14 @@ namespace WillSoss.Data
 
             using var tx = db.BeginTransaction();
 
-            await ExecuteScriptsAsync(BuildScripts, db, tx, GetTokens(), true);
+            var applied = (await GetAppliedMigrations(db, tx)).Select(m => m.Version);
+
+            var scriptsToApply = BuildScripts.Where(s => !applied.Contains(s.Version));
+
+            if (version is not null)
+                scriptsToApply = scriptsToApply.Where(s => s.Version <= version);
+
+            await ExecuteScriptsAsync(scriptsToApply, db, tx, GetTokens(), true);
 
             tx.Commit();
 
@@ -148,7 +160,7 @@ namespace WillSoss.Data
         protected abstract DbConnection GetConnectionWithoutDatabase();
         protected abstract string GetDatabaseName();
         protected abstract Script GetMigrationsTableScript();
-
+        protected abstract Task<IEnumerable<Migration>> GetAppliedMigrations(DbConnection db, DbTransaction? tx = null);
         protected abstract Task RecordMigration(Script script, DbConnection db, DbTransaction? tx = null);
     }
 }

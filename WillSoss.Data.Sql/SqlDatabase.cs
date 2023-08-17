@@ -8,29 +8,16 @@ namespace WillSoss.Data.Sql
 {
     public class SqlDatabase : Database
 	{
-		private static readonly Assembly DefaultScriptAssembly = typeof(SqlDatabase).Assembly;
-		private static readonly string DefaultScriptNamespace = typeof(SqlDatabase).Namespace!;
+		internal static readonly Assembly DefaultScriptAssembly = typeof(SqlDatabase).Assembly;
+		internal static readonly string DefaultScriptNamespace = typeof(SqlDatabase).Namespace!;
 
-		public static readonly Script DefaultCreateScript = new Script(DefaultScriptAssembly, DefaultScriptNamespace, "create.sql");
-		public static readonly Script DefaultResetScript = new Script(DefaultScriptAssembly, DefaultScriptNamespace, "reset.sql");
-		public static readonly Script DefaultDropScript = new Script(DefaultScriptAssembly, DefaultScriptNamespace, "drop.sql");
+		private static readonly Script DefaultCreateScript = new Script(DefaultScriptAssembly, DefaultScriptNamespace, "create.sql");
+		private static readonly Script DefaultDropScript = new Script(DefaultScriptAssembly, DefaultScriptNamespace, "drop.sql");
+        public static DatabaseBuilder ConnectTo(string connectionString) =>
+			new DatabaseBuilder(b => new SqlDatabase(b), connectionString, DefaultCreateScript, DefaultDropScript);
 
-		private readonly ILogger<SqlDatabase>? _logger;
-
-		public SqlDatabase(string connectionString, IEnumerable<Script> build, DatabaseOptions? options, ILogger<SqlDatabase> logger)
-			: base(connectionString, build, new DatabaseOptions()
-			{
-				CreateScript = options?.CreateScript ?? DefaultCreateScript,
-				ResetScript = options?.ResetScript ?? DefaultResetScript,
-				DropScript = options?.DropScript ?? DefaultDropScript,
-				CommandTimeout = options?.CommandTimeout,
-				PostCreateDelay = options?.PostCreateDelay,
-				PostDropDelay = options?.PostDropDelay
-			}, logger)
-
-		{
-			_logger = logger;
-		}
+        protected SqlDatabase(DatabaseBuilder builder)
+			: base(builder) { }
 
 		protected override DbConnection GetConnection() => new SqlConnection(ConnectionString);
 

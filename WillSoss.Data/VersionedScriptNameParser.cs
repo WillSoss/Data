@@ -1,8 +1,5 @@
 ﻿using System.Collections;
-using System.Runtime.CompilerServices;
 using System.Text.RegularExpressions;
-
-[assembly: InternalsVisibleTo("WillSoss.Data.Tests")]
 
 namespace WillSoss.Data
 {

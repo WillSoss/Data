@@ -11,6 +11,7 @@
   <ItemGroup>
     <PackageReference Include="dotnet.testcontainers" Version="1.6.0" />
     <PackageReference Include="fluentassertions" Version="6.11.0" />
+    <PackageReference Include="Microsoft.Data.SqlClient" Version="5.1.1" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.7.1" />
     <PackageReference Include="testcontainers" Version="3.4.0" />
     <PackageReference Include="testcontainers.mssql" Version="3.4.0" />
@@ -26,6 +27,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\WillSoss.Data.Sql\WillSoss.Data.Sql.csproj" />
     <ProjectReference Include="..\WillSoss.Data\WillSoss.Data.csproj" />
   </ItemGroup>
 

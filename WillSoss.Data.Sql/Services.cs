@@ -5,18 +5,18 @@ namespace WillSoss.Data.Sql
 {
     public static class Services
     {
-        public static IServiceCollection AddSqlDatabase(this IServiceCollection services, string connectionString, string buildScriptsDirectory, DatabaseOptions? options = null)
-        {
-            services.AddScoped<Database>(s => new SqlDatabase(connectionString, new ScriptDirectory(buildScriptsDirectory).Scripts, options, s.GetRequiredService<ILogger<SqlDatabase>>()));
+        //public static IServiceCollection AddSqlDatabase(this IServiceCollection services, string connectionString, string buildScriptsDirectory, DatabaseOptions? options = null)
+        //{
+        //    services.AddScoped<Database>(s => new SqlDatabase(connectionString, new ScriptDirectory(buildScriptsDirectory).Scripts, options, s.GetRequiredService<ILogger<SqlDatabase>>()));
 
-            return services;
-        }
+        //    return services;
+        //}
 
-        public static IServiceCollection AddAzureSqlDatabase(this IServiceCollection services, string connectionString, string buildScriptsDirectory, DatabaseOptions? options = null)
-        {
-            services.AddScoped<Database>(s => new AzureSqlDatabase(connectionString, new ScriptDirectory(buildScriptsDirectory).Scripts, options, s.GetRequiredService<ILogger<AzureSqlDatabase>>()));
+        //public static IServiceCollection AddAzureSqlDatabase(this IServiceCollection services, string connectionString, string buildScriptsDirectory, DatabaseOptions? options = null)
+        //{
+        //    services.AddScoped<Database>(s => new AzureSqlDatabase(connectionString, new ScriptDirectory(buildScriptsDirectory).Scripts, options, s.GetRequiredService<ILogger<AzureSqlDatabase>>()));
 
-            return services;
-        }
+        //    return services;
+        //}
     }
 }

@@ -7,68 +7,60 @@ namespace WillSoss.Data
 {
     public abstract class Database
     {
-        private IEnumerable<Script> _buildScripts;
+        private readonly IEnumerable<Script> _migrations;
+        private readonly string[] _productionKeywords;
         private readonly int _commandTimeout;
         private readonly int _postCreateDelay;
         private readonly int _postDropDelay;
-        private readonly ILogger _logger;
 
         public string ConnectionString { get; }
         public int CommandTimeout => _commandTimeout;
-        public Script CreateScript { get; private set; }
-        public IEnumerable<Script> BuildScripts => _buildScripts.OrderBy(s => s.Version);
-        public Script ResetScript { get; private set; }
-        public Script DropScript { get; private set; }
+        public Script CreateScript { get; }
+        public IEnumerable<Script> Migrations => _migrations.OrderBy(s => s.Version);
+        public Script? ResetScript { get; }
+        public Script DropScript { get; }
 
-        protected Database(string connectionString, IEnumerable<Script> buildScripts, DatabaseOptions options, ILogger logger)
+        internal Database(DatabaseBuilder builder)
         {
-            if (string.IsNullOrWhiteSpace(connectionString))
-                throw new ArgumentNullException(nameof(connectionString));
-
-            ConnectionString = connectionString;
-            CreateScript = options?.CreateScript ?? throw new ArgumentNullException(nameof(options.CreateScript));
-            _buildScripts = buildScripts ?? throw new ArgumentNullException(nameof(buildScripts));
-            ResetScript = options?.ResetScript ?? throw new ArgumentNullException(nameof(options.ResetScript));
-            DropScript = options?.DropScript ?? throw new ArgumentNullException(nameof(options.DropScript));
-            _commandTimeout = options?.CommandTimeout ?? 90;
-            _postCreateDelay = options?.PostCreateDelay ?? 0;
-            _postDropDelay = options?.PostDropDelay ?? 0;
-            _logger = logger;
+            ConnectionString = builder.ConnectionString;
+            CreateScript = builder.CreateScript;
+            DropScript = builder.DropScript;
+            ResetScript = builder.ResetScript;
+            _migrations = builder.MigrationScripts;
+            _commandTimeout = builder.CommandTimeout;
+            _postCreateDelay = builder.PostCreateDelay ;
+            _postDropDelay = builder.PostDropDelay;
+            _productionKeywords = builder.ProductionKeywords.Distinct().ToArray();
         }
 
         public virtual async Task Create()
         {
-            _logger.LogInformation($"Creating database {GetDatabaseName()}");
-
             using (var db = GetConnectionWithoutDatabase())
             {
                 await ExecuteScriptAsync(CreateScript, db, replacementTokens: GetTokens());
             }
 
-            _logger?.LogInformation($"Finished creating database {GetDatabaseName()}");
-
             if (_postCreateDelay > 0)
             {
-                _logger?.LogInformation($"Waiting {_postCreateDelay} seconds for resource deployment...");
                 await Task.Delay(TimeSpan.FromSeconds(_postCreateDelay));
             }
-
-            _logger.LogInformation($"Adding migration schema to database {GetDatabaseName()}");
 
             using (var db = GetConnection())
             {
                 await ExecuteScriptAsync(GetMigrationsTableScript(), db, replacementTokens: GetTokens());
             }
         }
+        public virtual async Task MigrateToLatest()
+        {
+
+        }
 
         /// <summary>
-        /// Builds the database using the <see cref="BuildScripts"/>.
+        /// Builds the database using the <see cref="Migrations"/>.
         /// </summary>
         /// <param name="version">Applies builds scripts up to the specified version.</param>
-        public virtual async Task Build(Version? version = null)
+        public virtual async Task MigrateTo(Version? version = null)
         {
-            _logger.LogInformation($"Building database {GetDatabaseName()}");
-
             using var db = GetConnection();
 
             await db.EnsureOpenAsync();
@@ -77,7 +69,7 @@ namespace WillSoss.Data
 
             var applied = (await GetAppliedMigrations(db, tx)).Select(m => m.Version);
 
-            var scriptsToApply = BuildScripts.Where(s => !applied.Contains(s.Version));
+            var scriptsToApply = Migrations.Where(s => !applied.Contains(s.Version));
 
             if (version is not null)
                 scriptsToApply = scriptsToApply.Where(s => s.Version <= version);
@@ -85,40 +77,45 @@ namespace WillSoss.Data
             await ExecuteScriptsAsync(scriptsToApply, db, tx, GetTokens(), true);
 
             tx.Commit();
-
-            _logger?.LogInformation($"Finished creating database {GetDatabaseName()}");
         }
 
         public virtual async Task Reset()
         {
-            _logger.LogInformation($"Resetting data in database {GetDatabaseName()}");
-
             using var db = GetConnectionWithoutDatabase();
+
+            if (IsProd(db))
+                throw new InvalidOperationException("Cannot reset a production database. The connection string contains a production keyword.");
+
+            if (ResetScript is null)
+                return;
 
             await db.EnsureOpenAsync();
 
             using var tx = db.BeginTransaction();
 
             await ExecuteScriptAsync(ResetScript, db, tx, GetTokens());
-
-            _logger?.LogInformation($"Finished resetting data in database {GetDatabaseName()}");
         }
 
         public virtual async Task Drop()
         {
-            _logger.LogInformation($"Dropping database {GetDatabaseName()}");
-
             using var db = GetConnectionWithoutDatabase();
+
+            if (IsProd(db))
+                throw new InvalidOperationException("Cannot drop a production database. The connection string contains a production keyword.");
 
             await ExecuteScriptAsync(DropScript, db, replacementTokens: GetTokens());
 
-            _logger?.LogInformation($"Finished dropping database {GetDatabaseName()}");
-
             if (_postDropDelay > 0)
             {
-                _logger?.LogInformation($"Waiting {_postDropDelay} seconds for resource deployment...");
                 await Task.Delay(TimeSpan.FromSeconds(_postDropDelay));
             }
+        }
+
+        private bool IsProd(DbConnection db)
+        {
+            var cs = db.ConnectionString.ToLower();
+
+            return _productionKeywords.Any(k => cs.Contains(k, StringComparison.InvariantCultureIgnoreCase));
         }
 
         public async Task ExecuteScriptsAsync(IEnumerable<Script> scripts, DbConnection db, DbTransaction? tx = null, Dictionary<string, string>? replacementTokens = null, bool recordMigration = false)

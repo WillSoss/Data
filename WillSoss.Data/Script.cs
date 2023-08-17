@@ -31,11 +31,18 @@ namespace WillSoss.Data
             {
                 // Version class requires at least major.minor
                 Version = Version.Parse(version!.IndexOf('.') < 0 ? $"{version}.0" : version);
+
+                if (Version.Build < 0)
+                    Version = new Version(Version.Major, Version.Minor, 0, Version.Revision);
+
+                if (Version.Revision < 0)
+                    Version = new Version(Version.Major, Version.Minor, Version.Build, 0);
+
                 Name = name!;
             }
             else
             {
-                Version = new Version(0, 0);
+                Version = new Version(0, 0, 0, 0);
                 Name = Path.GetFileNameWithoutExtension(path);
             }
 

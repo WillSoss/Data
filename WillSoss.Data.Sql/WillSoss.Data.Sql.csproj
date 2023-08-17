@@ -19,7 +19,6 @@
     <None Remove="create.sql" />
     <None Remove="drop-az.sql" />
     <None Remove="drop.sql" />
-    <None Remove="reset.sql" />
   </ItemGroup>
 
   <ItemGroup>
@@ -28,7 +27,6 @@
     <EmbeddedResource Include="drop-az.sql" />
     <EmbeddedResource Include="drop.sql" />
     <EmbeddedResource Include="create-az.sql" />
-    <EmbeddedResource Include="reset.sql" />
   </ItemGroup>
 
   <ItemGroup>

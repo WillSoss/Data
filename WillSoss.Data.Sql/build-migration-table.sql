@@ -4,7 +4,7 @@ begin
 end;
 go
 
-if not exists (select 1 from sys.tables where name='migrations' and type='U' AND schema_id = schema_id('cfg'))
+if not exists (select 1 from sys.tables where name='migration' and type='U' AND schema_id = schema_id('cfg'))
 begin
 
     create table cfg.migration (
@@ -21,4 +21,12 @@ begin
         (0, 0, 0, 0, 'Database Created', getutcdate());
 
 end;
+go
+
+create or alter view cfg.migration_detail as
+    select  concat(major, '.', minor, '.', build, '.', rev) [version], 
+            [description], 
+            applied_at
+    from    cfg.migration;
+
 go

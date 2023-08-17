@@ -59,6 +59,9 @@ namespace WillSoss.Data.Sql
 			}, tx, CommandTimeout);
         }
 
+        protected override async Task<IEnumerable<Migration>> GetAppliedMigrations(DbConnection db, DbTransaction? tx = null) =>
+			await db.QueryAsync<Migration>(@"select * from cfg.migration_detail;", new { }, tx, CommandTimeout);
+
         protected override async Task ExecuteScriptAsync(string sql, DbConnection db, DbTransaction? tx = null)
 		{
 			try

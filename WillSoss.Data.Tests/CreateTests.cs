@@ -5,11 +5,11 @@ using WillSoss.Data.Sql;
 
 namespace WillSoss.Data.Tests
 {
-    public class DatabaseCreateTests : IClassFixture<IntegrationTestFixture>
+    public class CreateTests : IClassFixture<IntegrationTestFixture>
     {
         private readonly IntegrationTestFixture _fixture;
 
-        public DatabaseCreateTests(IntegrationTestFixture fixture)
+        public CreateTests(IntegrationTestFixture fixture)
         {
             _fixture = fixture;
         }

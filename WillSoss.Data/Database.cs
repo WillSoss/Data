@@ -1,7 +1,5 @@
-﻿using Microsoft.Extensions.Logging;
-using System.Data;
+﻿using System.Data;
 using System.Data.Common;
-using System.Linq;
 
 namespace WillSoss.Data
 {
@@ -50,16 +48,17 @@ namespace WillSoss.Data
                 await ExecuteScriptAsync(GetMigrationsTableScript(), db, replacementTokens: GetTokens());
             }
         }
-        public virtual async Task MigrateToLatest()
-        {
 
-        }
+        /// <summary>
+        /// Builds the database using the <see cref="Migrations"/>.
+        /// </summary>
+        public virtual async Task MigrateToLatest() => await MigrateTo(null);
 
         /// <summary>
         /// Builds the database using the <see cref="Migrations"/>.
         /// </summary>
         /// <param name="version">Applies builds scripts up to the specified version.</param>
-        public virtual async Task MigrateTo(Version? version = null)
+        public virtual async Task MigrateTo(Version? version)
         {
             using var db = GetConnection();
 

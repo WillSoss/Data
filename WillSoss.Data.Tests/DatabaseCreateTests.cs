@@ -1,20 +1,15 @@
 ﻿using Dapper;
 using FluentAssertions;
 using Microsoft.Data.SqlClient;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using WillSoss.Data.Sql;
 
 namespace WillSoss.Data.Tests
 {
-    public class MigrationSetupTests : IClassFixture<IntegrationTestFixture>
+    public class DatabaseCreateTests : IClassFixture<IntegrationTestFixture>
     {
         private readonly IntegrationTestFixture _fixture;
 
-        public MigrationSetupTests(IntegrationTestFixture fixture)
+        public DatabaseCreateTests(IntegrationTestFixture fixture)
         {
             _fixture = fixture;
         }
@@ -35,8 +30,6 @@ namespace WillSoss.Data.Tests
             await db.Create();
 
             // Assert
-            var result = await db.GetConnection().QueryAsync("select * from cfg.migration");
-
             var migrations = await db.GetConnection().QueryAsync<Migration>("select * from cfg.migration_detail");
 
             migrations.Count().Should().Be(1);

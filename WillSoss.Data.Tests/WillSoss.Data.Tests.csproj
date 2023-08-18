@@ -29,4 +29,8 @@
     <ProjectReference Include="..\WillSoss.Data\WillSoss.Data.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Scripts\" />
+  </ItemGroup>
+
 </Project>

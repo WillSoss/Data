@@ -33,4 +33,19 @@
     <Folder Include="Scripts\" />
   </ItemGroup>
 
+  <ItemGroup>
+    <None Update="Scripts\1 one.sql">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="Scripts\1.1 one-one.sql">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="Scripts\1.1.1 one-one-one.sql">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="Scripts\1.1.1.1 one-one-one-one.sql">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
 </Project>

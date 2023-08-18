@@ -32,11 +32,8 @@ namespace WillSoss.Data
                 // Version class requires at least major.minor
                 Version = Version.Parse(version!.IndexOf('.') < 0 ? $"{version}.0" : version);
 
-                if (Version.Build < 0)
-                    Version = new Version(Version.Major, Version.Minor, 0, Version.Revision);
-
-                if (Version.Revision < 0)
-                    Version = new Version(Version.Major, Version.Minor, Version.Build, 0);
+                // Get rid of -1 build and rev
+                Version = new Version(Version.Major, Version.Minor, Math.Max(0, Version.Build), Math.Max(0, Version.Revision));
 
                 Name = name!;
             }

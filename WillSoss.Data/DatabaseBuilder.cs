@@ -43,12 +43,7 @@
             return this;
         }
 
-        public DatabaseBuilder AddMigration(string path)
-        {
-            AddMigration(new Script(path));
-
-            return this;
-        }
+        public DatabaseBuilder AddMigration(string path) => AddMigration(new Script(path));
 
         public DatabaseBuilder AddMigration(Script script)
         {
@@ -60,17 +55,23 @@
             return this;
         }
 
+        public DatabaseBuilder WithCreateScript(string path) => WithCreateScript(new Script(path));
+
         public DatabaseBuilder WithCreateScript(Script script)
         {
             CreateScript = script;
             return this;
         }
 
+        public DatabaseBuilder WithDropScript(string path) => WithDropScript(new Script(path));
+
         public DatabaseBuilder WithDropScript(Script script)
         {
             DropScript = script;
             return this;
         }
+
+        public DatabaseBuilder WithResetScript(string path) => WithResetScript(new Script(path));
 
         public DatabaseBuilder WithResetScript(Script script)
         {

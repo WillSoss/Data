@@ -4,18 +4,12 @@ namespace WillSoss.Data.Sql
 {
     public class SqlExceptionWithSource : Exception
     {
-        readonly SqlException ex;
-        readonly string sql;
+        public string Sql { get; }
 
         public SqlExceptionWithSource(SqlException ex, string sql)
+            : base($"{ex.Message} SQL:\n{sql}", ex)
         {
-            this.ex = ex;
-            this.sql = sql;
-        }
-
-        public override string ToString()
-        {
-            return ex.ToString() + "\n\nSQL:\n" + sql;
+            Sql = sql;
         }
     }
 }

@@ -153,9 +153,9 @@ namespace WillSoss.Data
             { "database", GetDatabaseName() }
         };
 
-        protected abstract DbConnection GetConnection();
-        protected abstract DbConnection GetConnectionWithoutDatabase();
-        protected abstract string GetDatabaseName();
+        protected internal abstract DbConnection GetConnection();
+        protected internal abstract DbConnection GetConnectionWithoutDatabase();
+        protected internal abstract string GetDatabaseName();
         protected abstract Script GetMigrationsTableScript();
         protected abstract Task<IEnumerable<Migration>> GetAppliedMigrations(DbConnection db, DbTransaction? tx = null);
         protected abstract Task RecordMigration(Script script, DbConnection db, DbTransaction? tx = null);

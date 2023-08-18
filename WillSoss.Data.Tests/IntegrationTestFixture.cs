@@ -1,30 +1,46 @@
-﻿using System.Security.Cryptography;
-using DotNet.Testcontainers.Containers;
-using DotNet.Testcontainers.Builders;
-using DotNet.Testcontainers.Configurations;
+﻿using DotNet.Testcontainers.Builders;
+using DotNet.Testcontainers.Networks;
+using System.Diagnostics;
+using WillSoss.Data.Tests.Containers;
 
 namespace WillSoss.Data.Tests
 {
     public class IntegrationTestFixture : IAsyncLifetime
     {
         public const string DatabaseName = "TestDb";
-        public readonly MsSqlTestcontainer DbContainer;
+        public const string Password = "Password!";
+        public readonly INetwork Network;
+        public readonly SqlServerContainer DbContainer;
 
         public IntegrationTestFixture()
         {
-            var databaseServerContainerConfig = new MsSqlTestcontainerConfiguration();
-            databaseServerContainerConfig.Database = DatabaseName;
-            databaseServerContainerConfig.Password = Convert.ToBase64String(RandomNumberGenerator.GetBytes(12));
-            databaseServerContainerConfig.Environments.Add("MSSQL_PID", "Express");
+            Network = new NetworkBuilder().Build();
 
-            DbContainer = new TestcontainersBuilder<MsSqlTestcontainer>()
-                 .WithDatabase(databaseServerContainerConfig)
-                 .Build();
+            DbContainer = new SqlServerContainerBuilder()
+                .WithNetwork(Network)
+                .WithPassword(Password)
+                .Build();
         }
 
         public async Task InitializeAsync()
         {
             await DbContainer.StartAsync();
+            await WaitForContainer(TimeSpan.FromSeconds(10));
+        }
+
+        async Task WaitForContainer(TimeSpan timeout)
+        {
+            Stopwatch stopwatch = Stopwatch.StartNew();
+            while (true)
+            {
+                if (DbContainer.Health == DotNet.Testcontainers.Containers.TestcontainersHealthStatus.Healthy)
+                    return;
+
+                if (stopwatch.Elapsed > timeout)
+                    return;
+
+                await Task.Delay(200);
+            }
         }
 
         public async Task DisposeAsync()

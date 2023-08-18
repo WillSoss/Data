@@ -17,11 +17,14 @@ namespace WillSoss.Data.Sql
 			new DatabaseBuilder(b => new SqlDatabase(b), connectionString, DefaultCreateScript, DefaultDropScript);
 
         protected SqlDatabase(DatabaseBuilder builder)
-			: base(builder) { }
+			: base(builder) 
+		{
+			SqlMapper.AddTypeHandler(new VersionTypeMapper());
+        }
 
-		protected override DbConnection GetConnection() => new SqlConnection(ConnectionString);
+		protected internal override DbConnection GetConnection() => new SqlConnection(ConnectionString);
 
-        protected override DbConnection GetConnectionWithoutDatabase()
+        protected internal override DbConnection GetConnectionWithoutDatabase()
         {
             var builder = new SqlConnectionStringBuilder(ConnectionString);
 
@@ -30,7 +33,7 @@ namespace WillSoss.Data.Sql
             return new SqlConnection(builder.ToString());
         }
 
-        protected override string GetDatabaseName() => new SqlConnectionStringBuilder(ConnectionString).InitialCatalog;
+        protected internal override string GetDatabaseName() => new SqlConnectionStringBuilder(ConnectionString).InitialCatalog;
 
 		protected override Script GetMigrationsTableScript() => new Script(DefaultScriptAssembly, DefaultScriptNamespace, "build-migration-table.sql");
 

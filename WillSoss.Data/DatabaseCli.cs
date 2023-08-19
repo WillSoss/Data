@@ -36,8 +36,10 @@ namespace WillSoss.Data
 
         public static async Task RunAsync(this IHost host, CancellationToken cancellationToken)
         {
-            var command = host.Services.GetRequiredService<CliCommand>();
-            await command.RunAsync(cancellationToken);
+            var command = host.Services.GetService<CliCommand>();
+
+            if (command is not null)
+                await command.RunAsync(cancellationToken);
         }
 
         static CommandLineBuilder GetCommandLineBuilder(IServiceCollection services)

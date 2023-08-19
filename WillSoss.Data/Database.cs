@@ -95,11 +95,11 @@ namespace WillSoss.Data
             await ExecuteScriptAsync(ResetScript, db, tx, GetTokens());
         }
 
-        public virtual async Task Drop()
+        public virtual async Task Drop(bool dropProductionOverride = false)
         {
             using var db = GetConnectionWithoutDatabase();
 
-            if (IsProd(db))
+            if (!dropProductionOverride && IsProd(db))
                 throw new InvalidOperationException("Cannot drop a production database. The connection string contains a production keyword.");
 
             await ExecuteScriptAsync(DropScript, db, replacementTokens: GetTokens());

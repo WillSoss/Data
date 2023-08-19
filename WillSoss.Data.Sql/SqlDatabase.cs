@@ -35,7 +35,9 @@ namespace WillSoss.Data.Sql
 
         protected internal override string GetDatabaseName() => new SqlConnectionStringBuilder(ConnectionString).InitialCatalog;
 
-		protected override Script GetMigrationsTableScript() => new Script(DefaultScriptAssembly, DefaultScriptNamespace, "build-migration-table.sql");
+        protected internal override string GetServerName() => new SqlConnectionStringBuilder(ConnectionString).DataSource;
+
+        protected override Script GetMigrationsTableScript() => new Script(DefaultScriptAssembly, DefaultScriptNamespace, "build-migration-table.sql");
 
         protected override async Task RecordMigration(Script script, DbConnection db, DbTransaction? tx = null)
         {

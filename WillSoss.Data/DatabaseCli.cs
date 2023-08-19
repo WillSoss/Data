@@ -2,6 +2,7 @@
 using Microsoft.Extensions.Hosting;
 using System.CommandLine;
 using System.CommandLine.Builder;
+using System.CommandLine.Parsing;
 using WillSoss.Data.Cli;
 
 namespace WillSoss.Data
@@ -14,16 +15,29 @@ namespace WillSoss.Data
             .CreateDefaultBuilder()
             .ConfigureServices(services =>
             {
-                services.AddSingleton(new CliInvoker(args, GetCommandLineBuilder(services)
+                // Parses the command line and registes the corresponding CliCommand
+                GetCommandLineBuilder(services)
                     .UseParseErrorReporting()
-                    .Build()));
+                    .Build()
+                    .Invoke(args);
             });
+        }
+
+        public static IHostBuilder ConfigureDatabase(this IHostBuilder builder, Func<IServiceCollection, DatabaseBuilder> configure)
+        {
+            builder.ConfigureServices(s => s.AddDatabaseBuilder(configure(s)));
+            return builder;
+        }
+        public static IHostBuilder ConfigureDatabase(this IHostBuilder builder, DatabaseBuilder databaseBuilder)
+        {
+            builder.ConfigureServices(s => s.AddDatabaseBuilder(databaseBuilder));
+            return builder;
         }
 
         public static async Task RunAsync(this IHost host, CancellationToken cancellationToken)
         {
-            var cli = host.Services.GetRequiredService<CliInvoker>();
-            await cli.Invoke();
+            var command = host.Services.GetRequiredService<CliCommand>();
+            await command.RunAsync(cancellationToken);
         }
 
         static CommandLineBuilder GetCommandLineBuilder(IServiceCollection services)

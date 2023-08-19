@@ -13,8 +13,8 @@ namespace WillSoss.Data.Sql
 
 		private static readonly Script DefaultCreateScript = new Script(DefaultScriptAssembly, DefaultScriptNamespace, "create.sql");
 		private static readonly Script DefaultDropScript = new Script(DefaultScriptAssembly, DefaultScriptNamespace, "drop.sql");
-        public static DatabaseBuilder ConnectTo(string connectionString) =>
-			new DatabaseBuilder(b => new SqlDatabase(b), connectionString, DefaultCreateScript, DefaultDropScript);
+        public static DatabaseBuilder CreateBuilder() =>
+			new DatabaseBuilder(b => new SqlDatabase(b), DefaultCreateScript, DefaultDropScript);
 
         protected SqlDatabase(DatabaseBuilder builder)
 			: base(builder) 

@@ -22,15 +22,17 @@
         /// <param name="build">Build function that takes the <see cref="DatabaseBuilder"/> and initializes a <see cref="Database"/>.</param>
         /// <param name="create">The default create script.</param>
         /// <param name="drop">The default drop script.</param>
-        public DatabaseBuilder(Func<DatabaseBuilder, Database> build, string connectionString, Script create, Script drop)
+        public DatabaseBuilder(Func<DatabaseBuilder, Database> build, Script create, Script drop)
         {
-            if (string.IsNullOrWhiteSpace(connectionString))
-                throw new ArgumentNullException(nameof(connectionString));
-
             _build = build;
-            ConnectionString = connectionString;
             CreateScript = create;
             DropScript = drop;
+        }
+
+        public DatabaseBuilder WithConnectionString(string connectionString)
+        {
+            ConnectionString = connectionString;
+            return this;
         }
 
         public DatabaseBuilder AddMigrations(string directory)
@@ -109,6 +111,12 @@
             return this;
         }
 
-        public Database Build() => _build(this);
+        public Database Build()
+        {
+            if (string.IsNullOrWhiteSpace(ConnectionString))
+                throw new ArgumentNullException(nameof(ConnectionString));
+            
+            return _build(this);
+        }
     }
 }

@@ -4,20 +4,18 @@ using System.CommandLine;
 
 namespace WillSoss.Data.Cli
 {
-    internal class DropCommand : CliCommand
+    internal class MigrateCommand : CliCommand
     {
-        internal static Option<bool> DropProductionOption = new Option<bool>(new[] { "--dropproduction" }, "Use with extreme caution. Drops a production database by overriding the production keyword protections.");
-
         private DatabaseBuilder _builder;
         private readonly string? _connectionString;
-        private readonly bool _dropProduction;
+        private readonly Version? _version;
         private readonly ILogger _logger;
 
-        public DropCommand(DatabaseBuilder builder, string? connectionString, bool dropProduction, ILogger<DropCommand> logger)
+        public MigrateCommand(DatabaseBuilder builder, string? connectionString, Version? version, ILogger<MigrateCommand> logger)
         {
             _builder = builder;
             _connectionString = connectionString;
-            _dropProduction = dropProduction;
+            _version = version;
             _logger = logger;
         }
 
@@ -34,26 +32,30 @@ namespace WillSoss.Data.Cli
 
             var db = _builder.Build();
 
-            _logger.LogInformation("Dropping database {0} on {1}.", db.GetDatabaseName(), db.GetServerName());
+            if (_version is null)
+                _logger.LogInformation("Migrating database {0} on {1} to latest.", db.GetDatabaseName(), db.GetServerName());
 
-            await db.Drop(_dropProduction);
+            else
+                _logger.LogInformation("Migrating database {0} on {1} to version {2}.", db.GetDatabaseName(), db.GetServerName(), _version);
 
-            _logger.LogInformation("Database {0} dropped on {1}.", db.GetDatabaseName(), db.GetServerName());
+            await db.MigrateTo(_version);
+
+            _logger.LogInformation("Migration complete for database {0} on {1}.", db.GetDatabaseName(), db.GetServerName());
         }
 
         internal static Command Create(IServiceCollection services)
         {
-            var deploy = new Command("drop", "Drops the database if it exists."); ;
+            var deploy = new Command("migrate", "Migrates to the specified version, or latest if no version is specified."); ;
 
             deploy.AddOption(ConnectionStringOption);
-            deploy.AddOption(DropOption);
+            deploy.AddOption(VersionOption);
 
-            deploy.SetHandler((cs, drop) => services.AddTransient<CliCommand>(s => new DropCommand(
+            deploy.SetHandler((cs, version) => services.AddTransient<CliCommand>(s => new MigrateCommand(
                 s.GetRequiredService<DatabaseBuilder>(),
                 cs,
-                drop,
-                s.GetRequiredService<ILogger<DropCommand>>()
-                )), ConnectionStringOption, DropProductionOption);
+                version,
+                s.GetRequiredService<ILogger<MigrateCommand>>()
+                )), ConnectionStringOption, VersionOption);
 
             return deploy;
         }

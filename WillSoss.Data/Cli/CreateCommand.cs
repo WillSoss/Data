@@ -4,19 +4,17 @@ using System.CommandLine;
 
 namespace WillSoss.Data.Cli
 {
-    internal class DeployCommand : CliCommand
+    internal class CreateCommand : CliCommand
     {
         private DatabaseBuilder _builder;
         private readonly string? _connectionString;
-        private readonly Version? _version;
         private readonly bool _drop;
         private readonly ILogger _logger;
 
-        public DeployCommand(DatabaseBuilder builder, string? connectionString, Version? version, bool drop, ILogger<DeployCommand> logger)
+        public CreateCommand(DatabaseBuilder builder, string? connectionString, bool drop, ILogger<CreateCommand> logger)
         {
             _builder = builder;
             _connectionString = connectionString;
-            _version = version;
             _drop = drop;
             _logger = logger;
         }
@@ -45,32 +43,22 @@ namespace WillSoss.Data.Cli
 
             await db.Create();
 
-            if (_version is null)
-                _logger.LogInformation("Migrating database {0} on {1} to latest.", db.GetDatabaseName(), db.GetServerName());
-
-            else
-                _logger.LogInformation("Migrating database {0} on {1} to version {2}.", db.GetDatabaseName(), db.GetServerName(), _version);
-
-            await db.MigrateTo(_version);
-
-            _logger.LogInformation("Deployment complete for database {0} on {1}.", db.GetDatabaseName(), db.GetServerName());
+            _logger.LogInformation("Database {0} created on {1}.", db.GetDatabaseName(), db.GetServerName());
         }
 
         internal static Command Create(IServiceCollection services)
         {
-            var deploy = new Command("deploy", "Creates the database if it does not exist, then migrates to latest."); ;
+            var deploy = new Command("create", "Creates the database if it does not exist."); ;
 
             deploy.AddOption(ConnectionStringOption);
-            deploy.AddOption(VersionOption);
             deploy.AddOption(DropOption);
 
-            deploy.SetHandler((cs, version, drop) => services.AddTransient<CliCommand>(s => new DeployCommand(
+            deploy.SetHandler((cs, drop) => services.AddTransient<CliCommand>(s => new CreateCommand(
                 s.GetRequiredService<DatabaseBuilder>(),
                 cs,
-                version,
                 drop,
-                s.GetRequiredService<ILogger<DeployCommand>>()
-                )), ConnectionStringOption, VersionOption, DropOption);
+                s.GetRequiredService<ILogger<CreateCommand>>()
+                )), ConnectionStringOption, DropOption);
 
             return deploy;
         }

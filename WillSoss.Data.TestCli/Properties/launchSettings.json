@@ -7,6 +7,9 @@
     "Deploy": {
       "commandName": "Project",
       "commandLineArgs": "deploy -c \"server=localhost;database=cli-test;integrated security=true;trust server certificate=true;\""
+    },
+    "Cli": {
+      "commandName": "Project"
     }
   }
 }

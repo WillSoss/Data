@@ -23,8 +23,8 @@ namespace WillSoss.Data.Tests
             cs.InitialCatalog = "test";
 
             // Act
-            var db = SqlDatabase
-                .ConnectTo(cs.ToString())
+            var db = SqlDatabase.CreateBuilder()
+                .WithConnectionString(cs.ToString())
                 .AddMigrations(migrationsPath)
                 .Build();
 

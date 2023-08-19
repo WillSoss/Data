@@ -8,8 +8,8 @@ namespace WillSoss.Data.Sql
         private static readonly Script DefaultCreateScript = new Script(DefaultScriptAssembly, DefaultScriptNamespace, "create-az.sql");
         private static readonly Script DefaultDropScript = new Script(DefaultScriptAssembly, DefaultScriptNamespace, "drop-az.sql");
 
-        public static DatabaseBuilder ConnectTo(string connectionString) => 
-            new DatabaseBuilder(b => new AzureSqlDatabase(b), connectionString, DefaultCreateScript, DefaultDropScript);
+        public static DatabaseBuilder CreateBuilder() => 
+            new DatabaseBuilder(b => new AzureSqlDatabase(b), DefaultCreateScript, DefaultDropScript);
 
         private AzureSqlDatabase(DatabaseBuilder builder)
             : base(builder) { }

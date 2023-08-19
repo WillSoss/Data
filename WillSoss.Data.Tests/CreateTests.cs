@@ -22,8 +22,8 @@ namespace WillSoss.Data.Tests
             var cs = new SqlConnectionStringBuilder(_fixture.DbContainer.ConnectionString);
             cs.InitialCatalog = "test";
 
-            var db = SqlDatabase
-                .ConnectTo(cs.ToString())
+            var db = SqlDatabase.CreateBuilder()
+                .WithConnectionString(cs.ToString())
                 .Build();
 
             // Act

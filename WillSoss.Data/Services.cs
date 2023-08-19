@@ -4,12 +4,18 @@ namespace WillSoss.Data
 {
     public static class Services
     {
-        public static IServiceCollection AddDatabase(this IServiceCollection services, Func<Database> configureDatabase)
+        public static IServiceCollection AddDatabaseBuilder(this IServiceCollection services, DatabaseBuilder builder)
         {
-           services.AddSingleton(s => configureDatabase());
+           services.AddSingleton(s => builder);
 
             return services;
         }
 
+        public static IServiceCollection AddDatabaseBuilder(this IServiceCollection services, Func<DatabaseBuilder> builder)
+        {
+            services.AddSingleton(s => builder());
+
+            return services;
+        }
     }
 }

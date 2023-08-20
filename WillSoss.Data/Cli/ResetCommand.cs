@@ -1,21 +1,22 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using System.CommandLine;
+using System.Runtime.CompilerServices;
 
 namespace WillSoss.Data.Cli
 {
-    internal class CreateCommand : CliCommand
+    internal class ResetCommand : CliCommand
     {
         private DatabaseBuilder _builder;
         private readonly string? _connectionString;
-        private readonly bool _drop;
+        private readonly bool _unsafe;
         private readonly ILogger _logger;
 
-        public CreateCommand(DatabaseBuilder builder, string? connectionString, bool drop, ILogger<CreateCommand> logger)
+        public ResetCommand(DatabaseBuilder builder, string? connectionString, bool @unsafe, ILogger<ResetCommand> logger)
         {
             _builder = builder;
             _connectionString = connectionString;
-            _drop = drop;
+            _unsafe = @unsafe;
             _logger = logger;
         }
 
@@ -32,33 +33,29 @@ namespace WillSoss.Data.Cli
 
             var db = _builder.Build();
 
-            if (_drop)
-            {
-                _logger.LogInformation("Dropping database {0} on {1}.", db.GetDatabaseName(), db.GetServerName());
+            if (_unsafe)
+                _logger.LogWarning("UNSAFE IS ON: Production keyword protections are disabled for destructive actions.");
 
-                await db.Drop();
-            }
+            _logger.LogInformation("Resetting database {0} on {1}.", db.GetDatabaseName(), db.GetServerName());
 
-            _logger.LogInformation("Creating database {0} on {1}.", db.GetDatabaseName(), db.GetServerName());
+            await db.Reset(_unsafe);
 
-            await db.Create();
-
-            _logger.LogInformation("Database {0} created on {1}.", db.GetDatabaseName(), db.GetServerName());
+            _logger.LogInformation("Reset complete for database {0} on {1}.", db.GetDatabaseName(), db.GetServerName());
         }
 
         internal static Command Create(IServiceCollection services)
         {
-            var command = new Command("create", "Creates the database if it does not exist."); ;
+            var command = new Command("reset", "Runs the reset script on the database. Can be used to clean up data after test runs."); ;
 
             command.AddOption(ConnectionStringOption);
-            command.AddOption(DropOption);
+            command.AddOption(UnsafeOption);
 
-            command.SetHandler((cs, drop) => services.AddTransient<CliCommand>(s => new CreateCommand(
+            command.SetHandler((cs, @unsafe) => services.AddTransient<CliCommand>(s => new ResetCommand(
                 s.GetRequiredService<DatabaseBuilder>(),
                 cs,
-                drop,
-                s.GetRequiredService<ILogger<CreateCommand>>()
-                )), ConnectionStringOption, DropOption);
+                @unsafe,
+                s.GetRequiredService<ILogger<ResetCommand>>()
+                )), ConnectionStringOption, UnsafeOption);
 
             return command;
         }

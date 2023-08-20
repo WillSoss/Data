@@ -51,9 +51,9 @@ namespace WillSoss.Data.Tests.Containers
 
         public SqlServerContainerBuilder WithPassword(string password) =>
             Merge(DockerResourceConfiguration, new SqlServerConfiguration(password: password))
-                .WithEnvironment("SA_PASSWORD", password);
+                .WithEnvironment("MSSQL_SA_PASSWORD", password);
 
-        public override SqlServerContainer Build() => new SqlServerContainer(DockerResourceConfiguration);
+        public override SqlServerContainer Build() => new(DockerResourceConfiguration);
 
         protected override SqlServerContainerBuilder Clone(IContainerConfiguration resourceConfiguration) =>
             Merge(new SqlServerConfiguration(resourceConfiguration), DockerResourceConfiguration ?? new SqlServerConfiguration());
@@ -62,6 +62,6 @@ namespace WillSoss.Data.Tests.Containers
             Merge(new SqlServerConfiguration(resourceConfiguration), DockerResourceConfiguration ?? new SqlServerConfiguration());
 
         protected override SqlServerContainerBuilder Merge(SqlServerConfiguration oldValue, SqlServerConfiguration newValue) =>
-            new SqlServerContainerBuilder(new SqlServerConfiguration(oldValue, newValue));
+            new(new SqlServerConfiguration(oldValue, newValue));
     }
 }

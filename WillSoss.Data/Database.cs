@@ -1,4 +1,5 @@
-﻿using System.Data;
+﻿using System.Collections.ObjectModel;
+using System.Data;
 using System.Data.Common;
 
 namespace WillSoss.Data
@@ -11,12 +12,14 @@ namespace WillSoss.Data
         private readonly int _postCreateDelay;
         private readonly int _postDropDelay;
 
-        public string ConnectionString { get; }
+        public string? ConnectionString { get; }
         public int CommandTimeout => _commandTimeout;
         public Script CreateScript { get; }
         public IEnumerable<Script> Migrations => _migrations.OrderBy(s => s.Version);
         public Script? ResetScript { get; }
         public Script DropScript { get; }
+
+        public ReadOnlyDictionary<string, Script> NamedScripts { get; }
 
         internal Database(DatabaseBuilder builder)
         {
@@ -75,14 +78,14 @@ namespace WillSoss.Data
 
             await ExecuteScriptsAsync(scriptsToApply, db, tx, GetTokens(), true);
 
-            tx.Commit();
+            await tx.CommitAsync();
         }
 
-        public virtual async Task Reset()
+        public virtual async Task Reset(bool @unsafe = false)
         {
             using var db = GetConnectionWithoutDatabase();
 
-            if (IsProd(db))
+            if (!@unsafe && IsProd(db))
                 throw new InvalidOperationException("Cannot reset a production database. The connection string contains a production keyword.");
 
             if (ResetScript is null)
@@ -93,13 +96,15 @@ namespace WillSoss.Data
             using var tx = db.BeginTransaction();
 
             await ExecuteScriptAsync(ResetScript, db, tx, GetTokens());
+
+            await tx.CommitAsync();
         }
 
-        public virtual async Task Drop(bool dropProductionOverride = false)
+        public virtual async Task Drop(bool @unsafe = false)
         {
             using var db = GetConnectionWithoutDatabase();
 
-            if (!dropProductionOverride && IsProd(db))
+            if (!@unsafe && IsProd(db))
                 throw new InvalidOperationException("Cannot drop a production database. The connection string contains a production keyword.");
 
             await ExecuteScriptAsync(DropScript, db, replacementTokens: GetTokens());
@@ -115,6 +120,22 @@ namespace WillSoss.Data
             var cs = db.ConnectionString.ToLower();
 
             return _productionKeywords.Any(k => cs.Contains(k, StringComparison.InvariantCultureIgnoreCase));
+        }
+
+        public virtual async Task ExecuteNamedScript(string name)
+        {
+            if (!NamedScripts.ContainsKey(name))
+                throw new ArgumentException($"Script {name} not found.");
+
+            using var db = GetConnectionWithoutDatabase();
+
+            await db.EnsureOpenAsync();
+
+            using var tx = db.BeginTransaction();
+
+            await ExecuteScriptAsync(NamedScripts[name], db, tx, GetTokens());
+
+            await tx.CommitAsync();
         }
 
         public async Task ExecuteScriptsAsync(IEnumerable<Script> scripts, DbConnection db, DbTransaction? tx = null, Dictionary<string, string>? replacementTokens = null, bool recordMigration = false)
@@ -147,7 +168,7 @@ namespace WillSoss.Data
 
         protected abstract Task ExecuteScriptAsync(string sql, DbConnection db, DbTransaction? tx = null);
 
-        protected Dictionary<string, string> GetTokens() => new Dictionary<string, string>()
+        protected Dictionary<string, string> GetTokens() => new()
         {
             { "database", GetDatabaseName() }
         };

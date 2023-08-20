@@ -30,9 +30,9 @@ namespace WillSoss.Data.Cli
 
             var db = _builder.Build();
 
-            _logger.LogInformation("Migrating database {0} on {1} to version {2}.", db.GetDatabaseName(), db.GetServerName(), _version);
+            //_logger.LogInformation("Migrating database {0} on {1} to version {2}.", db.GetDatabaseName(), db.GetServerName(), _version);
 
-            await db.MigrateTo(_version);
+            //await db.MigrateTo(_version);
 
             _logger.LogInformation("Deployment complete for database {0} on {1}.", db.GetDatabaseName(), db.GetServerName());
         }
@@ -45,11 +45,11 @@ namespace WillSoss.Data.Cli
             command.AddOption(VersionOption);
             command.AddOption(DropOption);
 
-            command.SetHandler((cs) => services.AddTransient<CliCommand>(s => new ExecCommand(
-                s.GetRequiredService<DatabaseBuilder>(),
-                cs,
-                s.GetRequiredService<ILogger<ExecCommand>>()
-                )), ConnectionStringOption);
+            //command.SetHandler((cs) => services.AddTransient<CliCommand>(s => new ExecCommand(
+            //    s.GetRequiredService<DatabaseBuilder>(),
+            //    cs,
+            //    s.GetRequiredService<ILogger<ExecCommand>>()
+            //    )), ConnectionStringOption);
 
             return command;
         }

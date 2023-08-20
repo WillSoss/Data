@@ -81,11 +81,11 @@ namespace WillSoss.Data
             await tx.CommitAsync();
         }
 
-        public virtual async Task Reset()
+        public virtual async Task Reset(bool @unsafe = false)
         {
             using var db = GetConnectionWithoutDatabase();
 
-            if (IsProd(db))
+            if (!@unsafe && IsProd(db))
                 throw new InvalidOperationException("Cannot reset a production database. The connection string contains a production keyword.");
 
             if (ResetScript is null)
@@ -100,11 +100,11 @@ namespace WillSoss.Data
             await tx.CommitAsync();
         }
 
-        public virtual async Task Drop(bool dropProductionOverride = false)
+        public virtual async Task Drop(bool @unsafe = false)
         {
             using var db = GetConnectionWithoutDatabase();
 
-            if (!dropProductionOverride && IsProd(db))
+            if (!@unsafe && IsProd(db))
                 throw new InvalidOperationException("Cannot drop a production database. The connection string contains a production keyword.");
 
             await ExecuteScriptAsync(DropScript, db, replacementTokens: GetTokens());

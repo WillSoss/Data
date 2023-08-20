@@ -4,13 +4,13 @@ using System.Text.RegularExpressions;
 
 namespace WillSoss.Data
 {
-    public class Script
+    public partial class Script
     {
-        static readonly Regex _go = new Regex(@"^\s*go\s*$", RegexOptions.Compiled | RegexOptions.Multiline | RegexOptions.IgnoreCase);
+        static readonly Regex _go = GetGoRegex();
         private readonly string[] _batches;
 
-        public string Name { get; }
-        public Version Version { get; }
+        public string Name { get; private set; } = string.Empty;
+        public Version Version { get; private set; } = new Version().FillZeros();
         public bool IsVersioned => Version != new Version(0, 0);
         public string Location { get; }
         public string FileName { get; }
@@ -25,20 +25,7 @@ namespace WillSoss.Data
             if (!File.Exists(path))
                 throw new FileNotFoundException("File not found.", path);
 
-            string? version;
-            string? name;
-            if (VersionedScriptNameParser.TryParse(Path.GetFileName(path), out version, out name))
-            {
-                // Version class requires at least major.minor
-                Version = Version.Parse(version!.IndexOf('.') < 0 ? $"{version}.0" : version).FillZeros();
-
-                Name = name!;
-            }
-            else
-            {
-                Version = new Version(0, 0, 0, 0);
-                Name = Path.GetFileNameWithoutExtension(path);
-            }
+            SetVersionFromFileName(Path.GetFileName(path));
 
             using var stream = File.OpenRead(path);
 
@@ -61,11 +48,28 @@ namespace WillSoss.Data
                 throw new ArgumentException($"Could not find embedded resource '{resource}'. Embedded resources found in in assembly '{assembly.FullName}': {found}");
             }
 
+            SetVersionFromFileName(filename);
+
             Body = ReadStream(stream);
             _batches = GetBatches(Body);
 
             Location = resource;
             FileName = filename;
+        }
+
+        void SetVersionFromFileName(string filename)
+        {
+            if (VersionedScriptNameParser.TryParse(filename, out string? version, out string? name))
+            {
+                // Version class requires at least major.minor
+                Version = Version.Parse(version!.IndexOf('.') < 0 ? $"{version}.0" : version).FillZeros();
+                Name = name!;
+            }
+            else
+            {
+                Version = new Version(0, 0, 0, 0);
+                Name = Path.GetFileNameWithoutExtension(filename);
+            }
         }
 
         string ReadStream(Stream stream)
@@ -75,5 +79,8 @@ namespace WillSoss.Data
         }
 
         string[] GetBatches(string script) => _go.Split(script).Where(c => !_go.IsMatch(c) && !string.IsNullOrWhiteSpace(c)).ToArray();
+
+        [GeneratedRegex("^\\s*go\\s*$", RegexOptions.IgnoreCase | RegexOptions.Multiline | RegexOptions.Compiled, "en-US")]
+        private static partial Regex GetGoRegex();
     }
 }

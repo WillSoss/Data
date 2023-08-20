@@ -3,10 +3,10 @@
     public class DatabaseBuilder
     {
         readonly Func<DatabaseBuilder, Database> _build;
-        readonly Dictionary<Version, Script> _migrations = new Dictionary<Version, Script>();
-        readonly List<string> _productionKeywords = new List<string>() { "prod", "live" };
+        readonly Dictionary<Version, Script> _migrations = new();
+        readonly List<string> _productionKeywords = new() { "prod", "live" };
 
-        public string ConnectionString { get; private set; }
+        public string? ConnectionString { get; private set; }
         public Script CreateScript { get; private set; }
         public Script DropScript { get; private set; }
         public Script? ResetScript { get; private set; }

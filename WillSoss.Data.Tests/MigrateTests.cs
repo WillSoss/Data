@@ -14,13 +14,15 @@ namespace WillSoss.Data.Tests
         }
 
         [Fact]
-        public async Task ShouldLoadMigrations()
+        public void ShouldLoadMigrations()
         {
             // Arrange
             var migrationsPath = Path.Combine(Directory.GetCurrentDirectory(), "Scripts");
 
-            var cs = new SqlConnectionStringBuilder(_fixture.DbContainer.ConnectionString);
-            cs.InitialCatalog = "test";
+            var cs = new SqlConnectionStringBuilder(_fixture.DbContainer.ConnectionString)
+            {
+                InitialCatalog = "test"
+            };
 
             // Act
             var db = SqlDatabase.CreateBuilder()

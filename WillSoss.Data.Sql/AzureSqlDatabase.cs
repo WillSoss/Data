@@ -5,11 +5,11 @@ namespace WillSoss.Data.Sql
 {
     public class AzureSqlDatabase : SqlDatabase
     {
-        private static readonly Script DefaultCreateScript = new Script(DefaultScriptAssembly, DefaultScriptNamespace, "create-az.sql");
-        private static readonly Script DefaultDropScript = new Script(DefaultScriptAssembly, DefaultScriptNamespace, "drop-az.sql");
+        private static readonly Script DefaultCreateScript = new(DefaultScriptAssembly, DefaultScriptNamespace, "create-az.sql");
+        private static readonly Script DefaultDropScript = new(DefaultScriptAssembly, DefaultScriptNamespace, "drop-az.sql");
 
-        public static DatabaseBuilder CreateBuilder() => 
-            new DatabaseBuilder(b => new AzureSqlDatabase(b), DefaultCreateScript, DefaultDropScript);
+        public static new DatabaseBuilder CreateBuilder() => 
+            new(b => new AzureSqlDatabase(b), DefaultCreateScript, DefaultDropScript);
 
         private AzureSqlDatabase(DatabaseBuilder builder)
             : base(builder) { }

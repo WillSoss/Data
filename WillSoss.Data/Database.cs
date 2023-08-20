@@ -11,7 +11,7 @@ namespace WillSoss.Data
         private readonly int _postCreateDelay;
         private readonly int _postDropDelay;
 
-        public string ConnectionString { get; }
+        public string? ConnectionString { get; }
         public int CommandTimeout => _commandTimeout;
         public Script CreateScript { get; }
         public IEnumerable<Script> Migrations => _migrations.OrderBy(s => s.Version);
@@ -147,7 +147,7 @@ namespace WillSoss.Data
 
         protected abstract Task ExecuteScriptAsync(string sql, DbConnection db, DbTransaction? tx = null);
 
-        protected Dictionary<string, string> GetTokens() => new Dictionary<string, string>()
+        protected Dictionary<string, string> GetTokens() => new()
         {
             { "database", GetDatabaseName() }
         };

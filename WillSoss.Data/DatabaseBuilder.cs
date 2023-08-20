@@ -1,15 +1,21 @@
-﻿namespace WillSoss.Data
+﻿using System.Text.RegularExpressions;
+
+namespace WillSoss.Data
 {
-    public class DatabaseBuilder
+    public partial class DatabaseBuilder
     {
-        readonly Func<DatabaseBuilder, Database> _build;
-        readonly Dictionary<Version, Script> _migrations = new();
-        readonly List<string> _productionKeywords = new() { "prod", "live" };
+        private static readonly Regex NamedScriptPattern = GetNamedScriptPattern();
+
+        private readonly Func<DatabaseBuilder, Database> _build;
+        private readonly Dictionary<Version, Script> _migrations = new();
+        private readonly List<string> _productionKeywords = new() { "prod", "live" };
+        private readonly Dictionary<string, Script> _namedScripts = new();
 
         public string? ConnectionString { get; private set; }
         public Script CreateScript { get; private set; }
         public Script DropScript { get; private set; }
         public Script? ResetScript { get; private set; }
+        public IReadOnlyDictionary<string, Script> NamedScripts => _namedScripts;
         public int CommandTimeout { get; private set; } = 90;
         public int PostCreateDelay { get; private set; } = 0;
         public int PostDropDelay { get; private set; } = 0;
@@ -81,6 +87,25 @@
             return this;
         }
 
+        public DatabaseBuilder AddNamedScript(string name, string path) =>
+            AddNamedScript(name, new Script(path));
+
+        public DatabaseBuilder AddNamedScript(string name, Script script)
+        {
+            if (string.IsNullOrWhiteSpace(name))
+                throw new ArgumentNullException(nameof(name));
+
+            if (!NamedScriptPattern.IsMatch(name))
+                throw new ArgumentException("Name can only contain numbers, letters, dash (-), and underscore (_).");
+
+            if (NamedScripts.Keys.Contains(name, StringComparer.InvariantCultureIgnoreCase))
+                throw new ArgumentException("Named scripts must have unique names.");
+
+            _namedScripts.Add(name, script);
+
+            return this;
+        }
+
         public DatabaseBuilder ClearProductionKeywords()
         {
             _productionKeywords.Clear();
@@ -118,5 +143,8 @@
             
             return _build(this);
         }
+
+        [GeneratedRegex("^[-\\w]+$", RegexOptions.Compiled | RegexOptions.Singleline)]
+        private static partial Regex GetNamedScriptPattern();
     }
 }

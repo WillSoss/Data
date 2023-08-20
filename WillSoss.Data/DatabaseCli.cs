@@ -47,6 +47,10 @@ namespace WillSoss.Data
             var root = new RootCommand();
 
             root.AddCommand(DeployCommand.Create(services));
+            root.AddCommand(CreateCommand.Create(services));
+            root.AddCommand(DropCommand.Create(services));
+            root.AddCommand(MigrateCommand.Create(services));
+            root.AddCommand(ResetCommand.Create(services));
 
             return new CommandLineBuilder(root);
         }

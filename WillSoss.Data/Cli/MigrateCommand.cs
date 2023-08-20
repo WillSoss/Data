@@ -45,19 +45,19 @@ namespace WillSoss.Data.Cli
 
         internal static Command Create(IServiceCollection services)
         {
-            var deploy = new Command("migrate", "Migrates to the specified version, or latest if no version is specified."); ;
+            var command = new Command("migrate", "Migrates to the specified version, or latest if no version is specified."); ;
 
-            deploy.AddOption(ConnectionStringOption);
-            deploy.AddOption(VersionOption);
+            command.AddOption(ConnectionStringOption);
+            command.AddOption(VersionOption);
 
-            deploy.SetHandler((cs, version) => services.AddTransient<CliCommand>(s => new MigrateCommand(
+            command.SetHandler((cs, version) => services.AddTransient<CliCommand>(s => new MigrateCommand(
                 s.GetRequiredService<DatabaseBuilder>(),
                 cs,
                 version,
                 s.GetRequiredService<ILogger<MigrateCommand>>()
                 )), ConnectionStringOption, VersionOption);
 
-            return deploy;
+            return command;
         }
     }
 }

@@ -43,19 +43,19 @@ namespace WillSoss.Data.Cli
 
         internal static Command Create(IServiceCollection services)
         {
-            var deploy = new Command("drop", "Drops the database if it exists."); ;
+            var command = new Command("drop", "Drops the database if it exists."); ;
 
-            deploy.AddOption(ConnectionStringOption);
-            deploy.AddOption(DropOption);
+            command.AddOption(ConnectionStringOption);
+            command.AddOption(DropOption);
 
-            deploy.SetHandler((cs, drop) => services.AddTransient<CliCommand>(s => new DropCommand(
+            command.SetHandler((cs, drop) => services.AddTransient<CliCommand>(s => new DropCommand(
                 s.GetRequiredService<DatabaseBuilder>(),
                 cs,
                 drop,
                 s.GetRequiredService<ILogger<DropCommand>>()
                 )), ConnectionStringOption, DropProductionOption);
 
-            return deploy;
+            return command;
         }
     }
 }

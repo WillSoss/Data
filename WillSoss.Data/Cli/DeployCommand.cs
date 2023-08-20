@@ -58,13 +58,13 @@ namespace WillSoss.Data.Cli
 
         internal static Command Create(IServiceCollection services)
         {
-            var deploy = new Command("deploy", "Creates the database if it does not exist, then migrates to latest."); ;
+            var command = new Command("deploy", "Creates the database if it does not exist, then migrates to latest."); ;
 
-            deploy.AddOption(ConnectionStringOption);
-            deploy.AddOption(VersionOption);
-            deploy.AddOption(DropOption);
+            command.AddOption(ConnectionStringOption);
+            command.AddOption(VersionOption);
+            command.AddOption(DropOption);
 
-            deploy.SetHandler((cs, version, drop) => services.AddTransient<CliCommand>(s => new DeployCommand(
+            command.SetHandler((cs, version, drop) => services.AddTransient<CliCommand>(s => new DeployCommand(
                 s.GetRequiredService<DatabaseBuilder>(),
                 cs,
                 version,
@@ -72,7 +72,7 @@ namespace WillSoss.Data.Cli
                 s.GetRequiredService<ILogger<DeployCommand>>()
                 )), ConnectionStringOption, VersionOption, DropOption);
 
-            return deploy;
+            return command;
         }
     }
 }

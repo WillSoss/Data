@@ -24,9 +24,5 @@ namespace WillSoss.Data.Cli
         internal static Option<bool> DropOption = new Option<bool>(new[] { "--drop", "-d" }, "Optional. Drops the database if it exists, then recreates and migrates.");
 
         internal static Option<bool> UnsafeOption = new Option<bool>(new[] { "--unsafe" }, "Use with extreme caution. Disables destructive action prevention for production databases using keyword protection.");
-
-        internal static Option<string?> ScriptOption = new Option<string?>(new[] { "--script", "-s" }, description: "Name of the script to run.");
-        
-        internal static Option<string?> ActionOption = new Option<string?>(new[] { "--action", "-a" }, description: "Name of the action to run.");
     }
 }

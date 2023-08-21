@@ -1,4 +1,5 @@
-﻿using System.Text.RegularExpressions;
+﻿using System.Collections.ObjectModel;
+using System.Text.RegularExpressions;
 
 namespace WillSoss.Data
 {
@@ -9,20 +10,39 @@ namespace WillSoss.Data
         private readonly Func<DatabaseBuilder, Database> _build;
         private readonly Dictionary<Version, Script> _migrations = new();
         private readonly List<string> _productionKeywords = new() { "prod", "live" };
-        private readonly Dictionary<string, Script> _namedScripts = new();
-        private readonly Dictionary<string, Func<Database, Task>> _actions = new();
+        private readonly Dictionary<string, (Script? Script, Func<Database, Task>? Action)> _actions = new();
 
         public string? ConnectionString { get; private set; }
         public Script CreateScript { get; private set; }
         public Script DropScript { get; private set; }
         public Script? ResetScript { get; private set; }
-        public IReadOnlyDictionary<string, Script> NamedScripts => _namedScripts;
-        public IReadOnlyDictionary<string, Func<Database, Task>> Actions => _actions;
+        public IReadOnlyDictionary<string, Script> NamedScripts => GetNamedScripts();
+        public IReadOnlyDictionary<string, Func<Database, Task>> Actions => _actions.Where(kv => kv.Value.Action is not null).ToDictionary(kv => kv.Key, kv => kv.Value.Action);
         public int CommandTimeout { get; private set; } = 90;
         public int PostCreateDelay { get; private set; } = 0;
         public int PostDropDelay { get; private set; } = 0;
         public IEnumerable<Script> MigrationScripts => _migrations.Values;
         public IEnumerable<string> ProductionKeywords => _productionKeywords;
+
+        IReadOnlyDictionary<string, Script> GetNamedScripts()
+        {
+            Dictionary<string, Script> d = new();
+
+            foreach (var kv in _actions.Where(kv => kv.Value.Script is not null))
+                d.Add(kv.Key, kv.Value.Script!);
+
+            return new ReadOnlyDictionary<string, Script>(d);
+        }
+
+        IReadOnlyDictionary<string, Func<Database, Task>> GetActions()
+        {
+            Dictionary<string, Func<Database, Task>> d = new();
+
+            foreach (var kv in _actions.Where(kv => kv.Value.Action is not null))
+                d.Add(kv.Key, kv.Value.Action!);
+
+            return new ReadOnlyDictionary<string, Func<Database, Task>>(d);
+        }
 
         /// <summary>
         /// Creates a new DatabaseBuilder
@@ -101,9 +121,9 @@ namespace WillSoss.Data
                 throw new ArgumentException("Name can only contain numbers, letters, dash (-), and underscore (_).");
 
             if (NamedScripts.Keys.Contains(name, StringComparer.InvariantCultureIgnoreCase))
-                throw new ArgumentException("Named scripts must have unique names.");
+                throw new ArgumentException("Named scripts and actions must have unique names.");
 
-            _namedScripts.Add(name, script);
+            _actions.Add(name, (script, null));
 
             return this;
         }
@@ -112,8 +132,11 @@ namespace WillSoss.Data
         {
             if (action is null)
                 throw new ArgumentNullException(nameof(action));
+            
+            if (NamedScripts.Keys.Contains(name, StringComparer.InvariantCultureIgnoreCase))
+                throw new ArgumentException("Named scripts and actions must have unique names.");
 
-            _actions.Add(name, action);
+            _actions.Add(name, (null, action));
 
             return this;
         }

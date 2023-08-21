@@ -95,7 +95,7 @@ await DatabaseCli
             .WithConnectionString("default-connection-string-for-local-dev")
             .AddMigrations(@"c:\db\migrations")
             .AddNamedScript(@"c:\db\scripts\populate-test-data.sql")
-            .AddAction("clear-table", db => ClearTable(db)))
+            .AddAction("clear-tables", db => ClearTable(db)))
     .Build()
     .RunAsync(CancellationToken.None);
 ```

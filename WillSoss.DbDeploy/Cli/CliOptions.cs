@@ -4,7 +4,7 @@ namespace WillSoss.DbDeploy.Cli
 {
     internal static class CliOptions
     {
-        internal static Option<string?> ConnectionStringOption = new Option<string?>(new[] { "--connectionString", "-c" },
+        internal static Option<string?> ConnectionStringOption = new Option<string?>(new[] { "--connectionstring", "-c" },
             description: "Connection string of the database to modify. Optional when a default is supplied by the application.");
 
         internal static Option<Version?> VersionOption = new Option<Version?>(new[] { "--version", "-v" },

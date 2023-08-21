@@ -44,10 +44,9 @@ namespace WillSoss.DbDeploy
 
         static CommandLineBuilder GetCommandLineBuilder(IServiceCollection services)
         {
-            var root = new RootCommand();
+            var root = DeployCommand.Create(services);
             root.AddGlobalOption(CliOptions.ConnectionStringOption);
 
-            root.AddCommand(DeployCommand.Create(services));
             root.AddCommand(CreateCommand.Create(services));
             root.AddCommand(DropCommand.Create(services));
             root.AddCommand(MigrateCommand.Create(services));

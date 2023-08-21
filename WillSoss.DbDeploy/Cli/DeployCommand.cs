@@ -56,9 +56,9 @@ namespace WillSoss.DbDeploy.Cli
             _logger.LogInformation("Deployment complete for database {0} on {1}.", db.GetDatabaseName(), db.GetServerName());
         }
 
-        internal static Command Create(IServiceCollection services)
+        internal static RootCommand Create(IServiceCollection services)
         {
-            var command = new Command("deploy", "Creates the database if it does not exist, then migrates to latest."); ;
+            var command = new RootCommand("Creates the database if it does not exist, then migrates to latest."); ;
 
             command.AddOption(CliOptions.ConnectionStringOption);
             command.AddOption(CliOptions.VersionOption);

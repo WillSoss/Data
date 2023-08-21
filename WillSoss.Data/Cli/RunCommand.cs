@@ -8,15 +8,13 @@ namespace WillSoss.Data.Cli
     {
         private DatabaseBuilder _builder;
         private readonly string? _connectionString;
-        private readonly string? _script;
         private readonly string? _action;
         private readonly ILogger _logger;
 
-        public RunCommand(DatabaseBuilder builder, string? connectionString, string? script, string? action, ILogger<RunCommand> logger)
+        public RunCommand(DatabaseBuilder builder, string? connectionString, string? action, ILogger<RunCommand> logger)
         {
             _builder = builder;
             _connectionString = connectionString;
-            _script = script;
             _action = action;
             _logger = logger;
         }
@@ -34,14 +32,12 @@ namespace WillSoss.Data.Cli
 
             var db = _builder.Build();
 
-            if (!string.IsNullOrEmpty(_script)) 
+            var scriptKey = db.NamedScripts.Keys.FirstOrDefault(k => k.Equals(_action, StringComparison.InvariantCultureIgnoreCase));
+            var actionKey = db.Actions.Keys.FirstOrDefault(k => k.Equals(_action, StringComparison.InvariantCultureIgnoreCase));
+
+            if (scriptKey is not null) 
             {
-                var key = db.NamedScripts.Keys.FirstOrDefault(k => k.Equals(_script, StringComparison.InvariantCultureIgnoreCase));
-
-                if (key is null)
-                    _logger.LogError("Script {0} not found", _script);
-
-                var script = db.NamedScripts[key!];
+                var script = db.NamedScripts[scriptKey!];
 
                 _logger.LogInformation("Running script {0} on database {1} on {2}.", script.FileName, db.GetDatabaseName(), db.GetServerName());
 
@@ -49,14 +45,9 @@ namespace WillSoss.Data.Cli
 
                 _logger.LogInformation("Script run complete on database {0} on {1}.", db.GetDatabaseName(), db.GetServerName());
             }
-            else if (!string.IsNullOrWhiteSpace(_action))
+            else if (actionKey is not null)
             {
-                var key = db.Actions.Keys.FirstOrDefault(k => k.Equals(_action, StringComparison.InvariantCultureIgnoreCase));
-
-                if (key is null)
-                    _logger.LogError("Action {0} not found", _action);
-
-                var action = db.Actions[key!];
+                var action = db.Actions[actionKey!];
 
                 _logger.LogInformation("Running action {0} on database {1} on {2}.", _action, db.GetDatabaseName(), db.GetServerName());
 
@@ -66,7 +57,7 @@ namespace WillSoss.Data.Cli
             }
             else
             {
-                _logger.LogError("A script or action name must be provided with the run command.");
+                _logger.LogError("A script or action named {0} could not be found.", _action);
             }
         }
 
@@ -74,16 +65,19 @@ namespace WillSoss.Data.Cli
         {
             var command = new Command("run", "Executes a script or action."); ;
 
-            command.AddOption(CliOptions.ScriptOption);
-            command.AddOption(CliOptions.ActionOption);
+            var arg = new Argument<string?>("script", "The script or action to run.")
+            {
+                Arity = ArgumentArity.ExactlyOne
+            };
+            
+            command.AddArgument(arg);
 
-            command.SetHandler((cs, script, action) => services.AddTransient<ICliCommand>(s => new RunCommand(
+            command.SetHandler((cs, action) => services.AddTransient<ICliCommand>(s => new RunCommand(
                 s.GetRequiredService<DatabaseBuilder>(),
                 cs,
-                script,
                 action,
                 s.GetRequiredService<ILogger<RunCommand>>()
-                )), CliOptions.ConnectionStringOption, CliOptions.ScriptOption, CliOptions.ActionOption);
+                )), CliOptions.ConnectionStringOption, arg);
 
             return command;
         }

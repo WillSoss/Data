@@ -14,7 +14,7 @@ await DatabaseCli
         SqlDatabase
             .CreateBuilder()
             .WithConnectionString("default-connection-string-for-local-dev")
-            .AddMigrations("c:\db\migrations"))
+            .AddMigrations(@"c:\db\migrations"))
     .Build()
     .RunAsync(CancellationToken.None);
 ```
@@ -93,8 +93,8 @@ await DatabaseCli
         SqlDatabase
             .CreateBuilder()
             .WithConnectionString("default-connection-string-for-local-dev")
-            .AddMigrations("c:\db\migrations")
-            .AddNamedScript("c:\db\scripts\populate-test-data.sql")
+            .AddMigrations(@"c:\db\migrations")
+            .AddNamedScript(@"c:\db\scripts\populate-test-data.sql")
             .AddAction("clear-table", db => ClearTable(db)))
     .Build()
     .RunAsync(CancellationToken.None);

@@ -1,11 +1,10 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using System.CommandLine;
-using System.Runtime.CompilerServices;
 
 namespace WillSoss.Data.Cli
 {
-    internal class ResetCommand : CliCommand
+    internal class ResetCommand : ICliCommand
     {
         private DatabaseBuilder _builder;
         private readonly string? _connectionString;
@@ -20,7 +19,7 @@ namespace WillSoss.Data.Cli
             _logger = logger;
         }
 
-        internal override async Task RunAsync(CancellationToken cancel)
+        async Task ICliCommand.RunAsync(CancellationToken cancel)
         {
             if (!string.IsNullOrWhiteSpace(_connectionString))
                 _builder = _builder.WithConnectionString(_connectionString);
@@ -47,15 +46,15 @@ namespace WillSoss.Data.Cli
         {
             var command = new Command("reset", "Runs the reset script on the database. Can be used to clean up data after test runs."); ;
 
-            command.AddOption(ConnectionStringOption);
-            command.AddOption(UnsafeOption);
+            command.AddOption(CliOptions.ConnectionStringOption);
+            command.AddOption(CliOptions.UnsafeOption);
 
-            command.SetHandler((cs, @unsafe) => services.AddTransient<CliCommand>(s => new ResetCommand(
+            command.SetHandler((cs, @unsafe) => services.AddTransient<ICliCommand>(s => new ResetCommand(
                 s.GetRequiredService<DatabaseBuilder>(),
                 cs,
                 @unsafe,
                 s.GetRequiredService<ILogger<ResetCommand>>()
-                )), ConnectionStringOption, UnsafeOption);
+                )), CliOptions.ConnectionStringOption, CliOptions.UnsafeOption);
 
             return command;
         }

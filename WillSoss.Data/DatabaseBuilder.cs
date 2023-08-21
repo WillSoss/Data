@@ -1,4 +1,5 @@
-﻿using System.Text.RegularExpressions;
+﻿using System.Net.Http.Headers;
+using System.Text.RegularExpressions;
 
 namespace WillSoss.Data
 {
@@ -10,12 +11,14 @@ namespace WillSoss.Data
         private readonly Dictionary<Version, Script> _migrations = new();
         private readonly List<string> _productionKeywords = new() { "prod", "live" };
         private readonly Dictionary<string, Script> _namedScripts = new();
+        private readonly Dictionary<string, Func<Database, Task>> _actions = new();
 
         public string? ConnectionString { get; private set; }
         public Script CreateScript { get; private set; }
         public Script DropScript { get; private set; }
         public Script? ResetScript { get; private set; }
         public IReadOnlyDictionary<string, Script> NamedScripts => _namedScripts;
+        public IReadOnlyDictionary<string, Func<Database, Task>> Actions => _actions;
         public int CommandTimeout { get; private set; } = 90;
         public int PostCreateDelay { get; private set; } = 0;
         public int PostDropDelay { get; private set; } = 0;
@@ -102,6 +105,16 @@ namespace WillSoss.Data
                 throw new ArgumentException("Named scripts must have unique names.");
 
             _namedScripts.Add(name, script);
+
+            return this;
+        }
+
+        public DatabaseBuilder AddAction(string name, Func<Database, Task> action)
+        {
+            if (action is null)
+                throw new ArgumentNullException(nameof(action));
+
+            _actions.Add(name, action);
 
             return this;
         }

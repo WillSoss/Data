@@ -4,7 +4,7 @@ using System.CommandLine;
 
 namespace WillSoss.Data.Cli
 {
-    internal class DropCommand : CliCommand
+    internal class DropCommand : ICliCommand
     {
         private DatabaseBuilder _builder;
         private readonly string? _connectionString;
@@ -19,7 +19,7 @@ namespace WillSoss.Data.Cli
             _logger = logger;
         }
 
-        internal override async Task RunAsync(CancellationToken cancel)
+        async Task ICliCommand.RunAsync(CancellationToken cancel)
         {
             if (!string.IsNullOrWhiteSpace(_connectionString))
                 _builder = _builder.WithConnectionString(_connectionString);
@@ -46,15 +46,14 @@ namespace WillSoss.Data.Cli
         {
             var command = new Command("drop", "Drops the database if it exists."); ;
 
-            command.AddOption(ConnectionStringOption);
-            command.AddOption(UnsafeOption);
+            command.AddOption(CliOptions.UnsafeOption);
 
-            command.SetHandler((cs, @unsafe) => services.AddTransient<CliCommand>(s => new DropCommand(
+            command.SetHandler((cs, @unsafe) => services.AddTransient<ICliCommand>(s => new DropCommand(
                 s.GetRequiredService<DatabaseBuilder>(),
                 cs,
                 @unsafe,
                 s.GetRequiredService<ILogger<DropCommand>>()
-                )), ConnectionStringOption, UnsafeOption);
+                )), CliOptions.ConnectionStringOption, CliOptions.UnsafeOption);
 
             return command;
         }

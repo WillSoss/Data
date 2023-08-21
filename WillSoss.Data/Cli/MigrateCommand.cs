@@ -4,7 +4,7 @@ using System.CommandLine;
 
 namespace WillSoss.Data.Cli
 {
-    internal class MigrateCommand : CliCommand
+    internal class MigrateCommand : ICliCommand
     {
         private DatabaseBuilder _builder;
         private readonly string? _connectionString;
@@ -19,7 +19,7 @@ namespace WillSoss.Data.Cli
             _logger = logger;
         }
 
-        internal override async Task RunAsync(CancellationToken cancel)
+        async Task ICliCommand.RunAsync(CancellationToken cancel)
         {
             if (!string.IsNullOrWhiteSpace(_connectionString))
                 _builder = _builder.WithConnectionString(_connectionString);
@@ -47,15 +47,15 @@ namespace WillSoss.Data.Cli
         {
             var command = new Command("migrate", "Migrates to the specified version, or latest if no version is specified."); ;
 
-            command.AddOption(ConnectionStringOption);
-            command.AddOption(VersionOption);
+            command.AddOption(CliOptions.ConnectionStringOption);
+            command.AddOption(CliOptions.VersionOption);
 
-            command.SetHandler((cs, version) => services.AddTransient<CliCommand>(s => new MigrateCommand(
+            command.SetHandler((cs, version) => services.AddTransient<ICliCommand>(s => new MigrateCommand(
                 s.GetRequiredService<DatabaseBuilder>(),
                 cs,
                 version,
                 s.GetRequiredService<ILogger<MigrateCommand>>()
-                )), ConnectionStringOption, VersionOption);
+                )), CliOptions.ConnectionStringOption, CliOptions.VersionOption);
 
             return command;
         }

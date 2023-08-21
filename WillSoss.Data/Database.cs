@@ -56,14 +56,18 @@ namespace WillSoss.Data
         /// <summary>
         /// Builds the database using the <see cref="Migrations"/>.
         /// </summary>
-        public virtual async Task MigrateToLatest() => await MigrateTo(null);
+        /// <returns>The number of scripts applied to the database.</returns>
+        public virtual async Task<int> MigrateToLatest() => await MigrateTo(null);
 
         /// <summary>
         /// Builds the database using the <see cref="Migrations"/>.
         /// </summary>
         /// <param name="version">Applies builds scripts up to the specified version.</param>
-        public virtual async Task MigrateTo(Version? version)
+        /// <returns>The number of scripts applied to the database.</returns>
+        public virtual async Task<int> MigrateTo(Version? version)
         {
+            version = version?.FillZeros();
+
             using var db = GetConnection();
 
             await db.EnsureOpenAsync();
@@ -72,14 +76,26 @@ namespace WillSoss.Data
 
             var applied = (await GetAppliedMigrations(db, tx)).Select(m => m.Version);
 
+            var latestApplied = applied.Max();
+
             var scriptsToApply = Migrations.Where(s => !applied.Contains(s.Version));
 
             if (version is not null)
                 scriptsToApply = scriptsToApply.Where(s => s.Version <= version);
 
-            await ExecuteScriptsAsync(scriptsToApply, db, tx, GetTokens(), true);
+            if (scriptsToApply.Any())
+            {
+                var scriptVersion = scriptsToApply.Select(m => m.Version).Min();
 
-            await tx.CommitAsync();
+                if (latestApplied is not null && scriptVersion is not null && scriptVersion < latestApplied)
+                    throw new MigrationsNotAppliedInOrderException(latestApplied, scriptVersion);
+
+                await ExecuteScriptsAsync(scriptsToApply, db, tx, GetTokens(), true);
+
+                await tx.CommitAsync();
+            }
+
+            return scriptsToApply.Count();
         }
 
         public virtual async Task Reset(bool @unsafe = false)
@@ -178,8 +194,8 @@ namespace WillSoss.Data
         protected internal abstract DbConnection GetConnectionWithoutDatabase();
         protected internal abstract string GetDatabaseName();
         protected internal abstract string GetServerName();
-        protected abstract Script GetMigrationsTableScript();
-        protected abstract Task<IEnumerable<Migration>> GetAppliedMigrations(DbConnection db, DbTransaction? tx = null);
-        protected abstract Task RecordMigration(Script script, DbConnection db, DbTransaction? tx = null);
+        protected internal abstract Script GetMigrationsTableScript();
+        protected internal abstract Task<IEnumerable<Migration>> GetAppliedMigrations(DbConnection db, DbTransaction? tx = null);
+        protected internal abstract Task RecordMigration(Script script, DbConnection db, DbTransaction? tx = null);
     }
 }

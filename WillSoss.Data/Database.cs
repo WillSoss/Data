@@ -1,5 +1,4 @@
-﻿using System.Collections.ObjectModel;
-using System.Data;
+﻿using System.Data;
 using System.Data.Common;
 
 namespace WillSoss.Data
@@ -18,8 +17,8 @@ namespace WillSoss.Data
         public IEnumerable<Script> Migrations => _migrations.OrderBy(s => s.Version);
         public Script? ResetScript { get; }
         public Script DropScript { get; }
-
-        public ReadOnlyDictionary<string, Script> NamedScripts { get; }
+        public IReadOnlyDictionary<string, Script> NamedScripts { get; }
+        public IReadOnlyDictionary<string, Func<Database, Task>> Actions { get; }
 
         internal Database(DatabaseBuilder builder)
         {
@@ -32,6 +31,8 @@ namespace WillSoss.Data
             _postCreateDelay = builder.PostCreateDelay ;
             _postDropDelay = builder.PostDropDelay;
             _productionKeywords = builder.ProductionKeywords.Distinct().ToArray();
+            NamedScripts = builder.NamedScripts;
+            Actions = builder.Actions;
         }
 
         public virtual async Task Create()

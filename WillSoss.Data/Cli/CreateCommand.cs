@@ -4,7 +4,7 @@ using System.CommandLine;
 
 namespace WillSoss.Data.Cli
 {
-    internal class CreateCommand : CliCommand
+    internal class CreateCommand : ICliCommand
     {
         private DatabaseBuilder _builder;
         private readonly string? _connectionString;
@@ -19,7 +19,7 @@ namespace WillSoss.Data.Cli
             _logger = logger;
         }
 
-        internal override async Task RunAsync(CancellationToken cancel)
+        async Task ICliCommand.RunAsync(CancellationToken cancel)
         {
             if (!string.IsNullOrWhiteSpace(_connectionString))
                 _builder = _builder.WithConnectionString(_connectionString);
@@ -50,15 +50,14 @@ namespace WillSoss.Data.Cli
         {
             var command = new Command("create", "Creates the database if it does not exist."); ;
 
-            command.AddOption(ConnectionStringOption);
-            command.AddOption(DropOption);
+            command.AddOption(CliOptions.DropOption);
 
-            command.SetHandler((cs, drop) => services.AddTransient<CliCommand>(s => new CreateCommand(
+            command.SetHandler((cs, drop) => services.AddTransient<ICliCommand>(s => new CreateCommand(
                 s.GetRequiredService<DatabaseBuilder>(),
                 cs,
                 drop,
                 s.GetRequiredService<ILogger<CreateCommand>>()
-                )), ConnectionStringOption, DropOption);
+                )), CliOptions.ConnectionStringOption, CliOptions.DropOption);
 
             return command;
         }

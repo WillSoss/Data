@@ -4,7 +4,7 @@ using System.CommandLine;
 
 namespace WillSoss.Data.Cli
 {
-    internal class DeployCommand : CliCommand
+    internal class DeployCommand : RootCommand, ICliCommand
     {
         private DatabaseBuilder _builder;
         private readonly string? _connectionString;
@@ -21,7 +21,7 @@ namespace WillSoss.Data.Cli
             _logger = logger;
         }
 
-        internal override async Task RunAsync(CancellationToken cancel)
+        async Task ICliCommand.RunAsync(CancellationToken cancel)
         {
             if (!string.IsNullOrWhiteSpace(_connectionString))
                 _builder = _builder.WithConnectionString(_connectionString);
@@ -60,17 +60,17 @@ namespace WillSoss.Data.Cli
         {
             var command = new Command("deploy", "Creates the database if it does not exist, then migrates to latest."); ;
 
-            command.AddOption(ConnectionStringOption);
-            command.AddOption(VersionOption);
-            command.AddOption(DropOption);
+            command.AddOption(CliOptions.ConnectionStringOption);
+            command.AddOption(CliOptions.VersionOption);
+            command.AddOption(CliOptions.DropOption);
 
-            command.SetHandler((cs, version, drop) => services.AddTransient<CliCommand>(s => new DeployCommand(
+            command.SetHandler((cs, version, drop) => services.AddTransient<ICliCommand>(s => new DeployCommand(
                 s.GetRequiredService<DatabaseBuilder>(),
                 cs,
                 version,
                 drop,
                 s.GetRequiredService<ILogger<DeployCommand>>()
-                )), ConnectionStringOption, VersionOption, DropOption);
+                )), CliOptions.ConnectionStringOption, CliOptions.VersionOption, CliOptions.DropOption);
 
             return command;
         }

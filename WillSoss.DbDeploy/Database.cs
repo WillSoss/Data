@@ -100,7 +100,7 @@ namespace WillSoss.DbDeploy
 
         public virtual async Task Reset(bool @unsafe = false)
         {
-            using var db = GetConnectionWithoutDatabase();
+            using var db = GetConnection();
 
             if (!@unsafe && IsProd(db))
                 throw new InvalidOperationException("Cannot reset a production database. The connection string contains a production keyword.");

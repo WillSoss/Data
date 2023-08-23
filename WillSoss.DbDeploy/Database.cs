@@ -144,7 +144,7 @@ namespace WillSoss.DbDeploy
             if (!NamedScripts.ContainsKey(name))
                 throw new ArgumentException($"Script {name} not found.");
 
-            using var db = GetConnectionWithoutDatabase();
+            using var db = GetConnection();
 
             await db.EnsureOpenAsync();
 

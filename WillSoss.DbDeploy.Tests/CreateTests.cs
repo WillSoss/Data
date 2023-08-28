@@ -5,11 +5,11 @@ using WillSoss.DbDeploy.Sql;
 
 namespace WillSoss.DbDeploy.Tests
 {
-    public class CreateTests : IClassFixture<IntegrationTestFixture>
+    public class CreateTests : IClassFixture<DatabaseFixture>
     {
-        private readonly IntegrationTestFixture _fixture;
+        private readonly DatabaseFixture _fixture;
 
-        public CreateTests(IntegrationTestFixture fixture)
+        public CreateTests(DatabaseFixture fixture)
         {
             _fixture = fixture;
         }

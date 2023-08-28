@@ -20,7 +20,7 @@ namespace WillSoss.DbDeploy.Sql
 			new DatabaseBuilder(b =>
 				new SqlDatabase(b),
 				async db => (await ((SqlDatabase)db).IsAzure()) ? AzureCreateScript : OnPremiseCreateScript,
-				async db => (await ((SqlDatabase)db).IsAzure()) ? AzureCreateScript : OnPremiseCreateScript);
+				async db => (await ((SqlDatabase)db).IsAzure()) ? AzureDropScript : OnPremiseDropScript);
 
         protected SqlDatabase(DatabaseBuilder builder)
 			: base(builder) 

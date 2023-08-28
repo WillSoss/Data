@@ -1,6 +1,5 @@
 ﻿using Dapper;
 using Microsoft.Data.SqlClient;
-using Microsoft.Extensions.Logging;
 using System.Data.Common;
 using System.Reflection;
 
@@ -11,10 +10,17 @@ namespace WillSoss.DbDeploy.Sql
 		internal static readonly Assembly DefaultScriptAssembly = typeof(SqlDatabase).Assembly;
 		internal static readonly string DefaultScriptNamespace = typeof(SqlDatabase).Namespace!;
 
-		private static readonly Script DefaultCreateScript = new Script(DefaultScriptAssembly, DefaultScriptNamespace, "create.sql");
-		private static readonly Script DefaultDropScript = new Script(DefaultScriptAssembly, DefaultScriptNamespace, "drop.sql");
-        public static DatabaseBuilder CreateBuilder() =>
-			new DatabaseBuilder(b => new SqlDatabase(b), DefaultCreateScript, DefaultDropScript);
+		private static readonly Script OnPremiseCreateScript = new Script(DefaultScriptAssembly, DefaultScriptNamespace, "create.sql");
+		private static readonly Script OnPremiseDropScript = new Script(DefaultScriptAssembly, DefaultScriptNamespace, "drop.sql");
+
+        private static readonly Script AzureCreateScript = new(DefaultScriptAssembly, DefaultScriptNamespace, "create-az.sql");
+        private static readonly Script AzureDropScript = new(DefaultScriptAssembly, DefaultScriptNamespace, "drop-az.sql");
+
+		public static DatabaseBuilder CreateBuilder() =>
+			new DatabaseBuilder(b =>
+				new SqlDatabase(b),
+				async db => (await ((SqlDatabase)db).IsAzure()) ? AzureCreateScript : OnPremiseCreateScript,
+				async db => (await ((SqlDatabase)db).IsAzure()) ? AzureCreateScript : OnPremiseCreateScript);
 
         protected SqlDatabase(DatabaseBuilder builder)
 			: base(builder) 
@@ -32,6 +38,9 @@ namespace WillSoss.DbDeploy.Sql
 
             return new SqlConnection(builder.ToString());
         }
+
+        Task<bool> IsAzure(DbConnection? db = null) => (db ?? GetConnectionWithoutDatabase()).ExecuteScalarAsync<bool>("select iif(serverproperty('edition') = N'SQL Azure', 1, 0);", commandTimeout: CommandTimeout);
+
 
         protected internal override string GetDatabaseName() => new SqlConnectionStringBuilder(ConnectionString).InitialCatalog;
 

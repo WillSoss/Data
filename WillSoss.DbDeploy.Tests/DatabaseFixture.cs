@@ -2,20 +2,20 @@
 using DotNet.Testcontainers.Builders;
 using DotNet.Testcontainers.Networks;
 using Microsoft.Data.SqlClient;
-using System.ComponentModel;
 using System.Diagnostics;
+using WillSoss.DbDeploy.Sql;
 using WillSoss.DbDeploy.Tests.Containers;
 
 namespace WillSoss.DbDeploy.Tests
 {
-    public class IntegrationTestFixture : IAsyncLifetime
+    public class DatabaseFixture : IAsyncLifetime
     {
         public const string DatabaseName = "TestDb";
         public const string Password = "Password!";
         public readonly INetwork Network;
         public readonly SqlServerContainer DbContainer;
 
-        public IntegrationTestFixture()
+        public DatabaseFixture()
         {
             Network = new NetworkBuilder().Build();
 

@@ -1,33 +1,26 @@
 ﻿using FluentAssertions;
 using Microsoft.Data.SqlClient;
-using System.CommandLine.Parsing;
 using WillSoss.DbDeploy.Sql;
 
 namespace WillSoss.DbDeploy.Tests
 {
-    public class MigrateTests : IClassFixture<IntegrationTestFixture>
+    [Collection(nameof(DatabaseCollection))]
+    [Trait("Category", "Migrations")]
+    public class MigrateTests : DatabaseTest
     {
-        private readonly IntegrationTestFixture _fixture;
 
-        public MigrateTests(IntegrationTestFixture fixture)
-        {
-            _fixture = fixture;
-        }
-
+        public MigrateTests(DatabaseFixture fixture)
+            : base(fixture, "test") { }
+        
         [Fact]
         public void ShouldLoadMigrations()
         {
             // Arrange
             var migrationsPath = Path.Combine(Directory.GetCurrentDirectory(), "Scripts");
 
-            var cs = new SqlConnectionStringBuilder(_fixture.DbContainer.ConnectionString)
-            {
-                InitialCatalog = "test"
-            };
-
             // Act
             var db = SqlDatabase.CreateBuilder()
-                .WithConnectionString(cs.ToString())
+                .WithConnectionString(ConnectionString)
                 .AddMigrations(migrationsPath)
                 .Build();
 
@@ -41,17 +34,10 @@ namespace WillSoss.DbDeploy.Tests
             // Arrange
             var migrationsPath = Path.Combine(Directory.GetCurrentDirectory(), "Scripts");
 
-            var cs = new SqlConnectionStringBuilder(_fixture.DbContainer.ConnectionString)
-            {
-                InitialCatalog = "test"
-            };
-
             var db = SqlDatabase.CreateBuilder()
-                .WithConnectionString(cs.ToString())
+                .WithConnectionString(ConnectionString)
                 .AddMigrations(migrationsPath)
                 .Build();
-
-            await db.Drop();
 
             await db.Create();
 
@@ -73,17 +59,10 @@ namespace WillSoss.DbDeploy.Tests
             // Arrange
             var migrationsPath = Path.Combine(Directory.GetCurrentDirectory(), "Scripts");
 
-            var cs = new SqlConnectionStringBuilder(_fixture.DbContainer.ConnectionString)
-            {
-                InitialCatalog = "test"
-            };
-
             var db = SqlDatabase.CreateBuilder()
-                .WithConnectionString(cs.ToString())
+                .WithConnectionString(ConnectionString)
                 .AddMigrations(migrationsPath)
                 .Build();
-
-            await db.Drop();
 
             await db.Create();
 
@@ -109,17 +88,10 @@ namespace WillSoss.DbDeploy.Tests
             // Apply migrations, but skip "1.1 one-one.sql"
             var migrationsPath = Path.Combine(Directory.GetCurrentDirectory(), "Scripts - One Missing");
 
-            var cs = new SqlConnectionStringBuilder(_fixture.DbContainer.ConnectionString)
-            {
-                InitialCatalog = "test"
-            };
-
             var db = SqlDatabase.CreateBuilder()
-                .WithConnectionString(cs.ToString())
+                .WithConnectionString(ConnectionString)
                 .AddMigrations(migrationsPath)
                 .Build();
-
-            await db.Drop();
 
             await db.Create();
 
@@ -129,7 +101,7 @@ namespace WillSoss.DbDeploy.Tests
             migrationsPath = Path.Combine(Directory.GetCurrentDirectory(), "Scripts");
 
             db = SqlDatabase.CreateBuilder()
-                .WithConnectionString(cs.ToString())
+                .WithConnectionString(ConnectionString)
                 .AddMigrations(migrationsPath)
                 .Build();
 

@@ -19,13 +19,12 @@ namespace WillSoss.DbDeploy.Tests.Containers
 
         protected override SqlServerContainerBuilder Init()
         {
-            return base
+            return base.Init()
                 .WithImage("mcr.microsoft.com/mssql/server:2022-latest")
                 .WithPortBinding(1433, true)
                 .WithEnvironment("ACCEPT_EULA", "Y")
                 .WithPassword("Password!")
-                .WithWaitStrategy(Wait.ForUnixContainer().AddCustomWaitStrategy(new WaitUntilSqlIsReady()))
-                .Init();
+                .WithWaitStrategy(Wait.ForUnixContainer().AddCustomWaitStrategy(new WaitUntilSqlIsReady()));
         }
 
         class WaitUntilSqlIsReady : IWaitUntil

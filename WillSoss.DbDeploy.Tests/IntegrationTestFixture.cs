@@ -1,5 +1,8 @@
-﻿using DotNet.Testcontainers.Builders;
+﻿using Dapper;
+using DotNet.Testcontainers.Builders;
 using DotNet.Testcontainers.Networks;
+using Microsoft.Data.SqlClient;
+using System.ComponentModel;
 using System.Diagnostics;
 using WillSoss.DbDeploy.Tests.Containers;
 
@@ -25,7 +28,7 @@ namespace WillSoss.DbDeploy.Tests
         public async Task InitializeAsync()
         {
             await DbContainer.StartAsync();
-            await WaitForContainer(TimeSpan.FromSeconds(10));
+            await WaitForContainer(TimeSpan.FromSeconds(60));
         }
 
         async Task WaitForContainer(TimeSpan timeout)
@@ -33,14 +36,31 @@ namespace WillSoss.DbDeploy.Tests
             Stopwatch stopwatch = Stopwatch.StartNew();
             while (true)
             {
-                if (DbContainer.Health == DotNet.Testcontainers.Containers.TestcontainersHealthStatus.Healthy)
+                if (await IsSqlServerReady())
                     return;
 
                 if (stopwatch.Elapsed > timeout)
-                    return;
+                    throw new TimeoutException("Timeout occured while waiting for the container to start.");
 
-                await Task.Delay(200);
+                await Task.Delay(250);
             }
+        }
+
+        public async Task<bool> IsSqlServerReady()
+        {
+            try
+            {
+                using var db = new SqlConnection(DbContainer.ConnectionString);
+                db.Open();
+
+                using var cmd = new SqlCommand("select 1", db);
+
+                return (await db.QueryFirstOrDefaultAsync<int?>("select 1")) == 1;
+            }
+            catch
+            {
+                return false;
+            } 
         }
 
         public async Task DisposeAsync()

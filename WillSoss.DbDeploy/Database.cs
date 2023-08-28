@@ -11,20 +11,19 @@ namespace WillSoss.DbDeploy
         private readonly int _postCreateDelay;
         private readonly int _postDropDelay;
 
+        private Func<Database, Task<Script>> _create;
+        private Func<Database, Task<Script>> _drop;
+
         public string? ConnectionString { get; }
         public int CommandTimeout => _commandTimeout;
-        public Script CreateScript { get; }
         public IEnumerable<Script> Migrations => _migrations.OrderBy(s => s.Version);
         public Script? ResetScript { get; }
-        public Script DropScript { get; }
         public IReadOnlyDictionary<string, Script> NamedScripts { get; }
         public IReadOnlyDictionary<string, Func<Database, Task>> Actions { get; }
 
         internal Database(DatabaseBuilder builder)
         {
             ConnectionString = builder.ConnectionString;
-            CreateScript = builder.CreateScript;
-            DropScript = builder.DropScript;
             ResetScript = builder.ResetScript;
             _migrations = builder.MigrationScripts;
             _commandTimeout = builder.CommandTimeout;
@@ -33,13 +32,19 @@ namespace WillSoss.DbDeploy
             _productionKeywords = builder.ProductionKeywords.Distinct().ToArray();
             NamedScripts = builder.NamedScripts;
             Actions = builder.Actions;
+
+            _create = builder.GetCreateScript;
+            _drop = builder.GetDropScript;
         }
+
+        public Task<Script> GetCreateScript() => _create(this);
+        public Task<Script> GetDropScript() => _drop(this);
 
         public virtual async Task Create()
         {
             using (var db = GetConnectionWithoutDatabase())
             {
-                await ExecuteScriptAsync(CreateScript, db, replacementTokens: GetTokens());
+                await ExecuteScriptAsync(await GetCreateScript(), db, replacementTokens: GetTokens());
             }
 
             if (_postCreateDelay > 0)
@@ -124,7 +129,7 @@ namespace WillSoss.DbDeploy
             if (!@unsafe && IsProd(db))
                 throw new InvalidOperationException("Cannot drop a production database. The connection string contains a production keyword.");
 
-            await ExecuteScriptAsync(DropScript, db, replacementTokens: GetTokens());
+            await ExecuteScriptAsync(await GetDropScript(), db, replacementTokens: GetTokens());
 
             if (_postDropDelay > 0)
             {

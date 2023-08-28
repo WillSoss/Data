@@ -12,9 +12,9 @@ namespace WillSoss.DbDeploy
         private readonly List<string> _productionKeywords = new() { "prod", "live" };
         private readonly Dictionary<string, (Script? Script, Func<Database, Task>? Action)> _actions = new();
 
+        public Func<Database, Task<Script>> GetCreateScript;
+        public Func<Database, Task<Script>> GetDropScript;
         public string? ConnectionString { get; private set; }
-        public Script CreateScript { get; private set; }
-        public Script DropScript { get; private set; }
         public Script? ResetScript { get; private set; }
         public IReadOnlyDictionary<string, Script> NamedScripts => GetNamedScripts();
         public IReadOnlyDictionary<string, Func<Database, Task>> Actions => _actions.Where(kv => kv.Value.Action is not null).ToDictionary(kv => kv.Key, kv => kv.Value.Action);
@@ -53,8 +53,15 @@ namespace WillSoss.DbDeploy
         public DatabaseBuilder(Func<DatabaseBuilder, Database> build, Script create, Script drop)
         {
             _build = build;
-            CreateScript = create;
-            DropScript = drop;
+            GetDropScript = new Func<Database, Task<Script>>(db => Task.FromResult(drop));
+            GetCreateScript = new Func<Database, Task<Script>>(db => Task.FromResult(create));
+        }
+
+        public DatabaseBuilder(Func<DatabaseBuilder, Database> build, Func<Database, Task<Script>> create, Func<Database, Task<Script>> drop)
+        {
+            _build = build;
+            GetDropScript = drop;
+            GetCreateScript = create;
         }
 
         public DatabaseBuilder WithConnectionString(string connectionString)
@@ -89,7 +96,7 @@ namespace WillSoss.DbDeploy
 
         public DatabaseBuilder WithCreateScript(Script script)
         {
-            CreateScript = script;
+            GetCreateScript = new Func<Database, Task<Script>>(db => Task.FromResult(script));
             return this;
         }
 
@@ -97,7 +104,7 @@ namespace WillSoss.DbDeploy
 
         public DatabaseBuilder WithDropScript(Script script)
         {
-            DropScript = script;
+            GetDropScript = new Func<Database, Task<Script>>(db => Task.FromResult(script));
             return this;
         }
 

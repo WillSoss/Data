@@ -4,9 +4,6 @@ namespace WillSoss.DbDeploy
 {
     internal class Parser
     {
-        //https://regex101.com/r/Lky8mU/1
-        private static readonly Regex scriptPattern = new Regex(@"^(?<version>\d+(\.\d+){0,3})[-_\s]+(?<name>[-_\s\w]+)*\.sql$", RegexOptions.Compiled | RegexOptions.IgnoreCase);
-
         // https://regex101.com/r/Udi5nA/1
         private static readonly Regex filePattern = new Regex(@"^(?<number>\d+)([-_ ]+(?<name>[- \w]+)?)?\.sql$", RegexOptions.Compiled | RegexOptions.IgnoreCase);
 
@@ -24,20 +21,20 @@ namespace WillSoss.DbDeploy
             return (version!, name!);
         }
 
-        internal static bool TryParseFileName(string file, out string? version, out string? name)
+        internal static bool TryParseFileName(string file, out string? number, out string? name)
         {
-            var match = scriptPattern.Match(Path.GetFileName(file));
+            var match = filePattern.Match(Path.GetFileName(file));
 
             if (!match.Success)
             {
-                version = null;
+                number = null;
                 name = null;
 
                 return false;
             }
             else
             {
-                version = match.Groups["version"].Captures[0].Value;
+                number = match.Groups["number"].Captures[0].Value;
                 name = match.Groups["name"].Captures[0].Value;
 
                 return true;
@@ -57,7 +54,7 @@ namespace WillSoss.DbDeploy
 
         internal static bool TryParseFolderName(string file, out string? version, out string? name)
         {
-            var match = scriptPattern.Match(Path.GetFileName(file));
+            var match = folderPattern.Match(Path.GetFileName(file));
 
             if (!match.Success)
             {

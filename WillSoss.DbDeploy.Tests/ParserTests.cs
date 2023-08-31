@@ -2,14 +2,15 @@ using FluentAssertions;
 
 namespace WillSoss.DbDeploy.Tests
 {
-    public class VersionedScriptNameParserTests
+    public class ParserTests
     {
-        [Fact]
-        public void ShouldParseScriptNames()
+        [Theory]
+        [InlineData("9-nine.sql", "9", "nine")]
+        public void ShouldParseScriptNames(string file, string version, string name)
         {
             var files = new string[]
             {
-                "9-nine.sql",
+                
                 "8_eight.SQL",
                 "7 seven.sql",
                 "6- _ six.sql",
@@ -30,10 +31,10 @@ namespace WillSoss.DbDeploy.Tests
                 ("6", "six"),
                 ("7", "seven"),
                 ("8", "eight"),
-                ("9", "nine")
+                ()
             };
 
-            var parser = new VersionedScriptNameParser(files);
+            Parser.TryParseFolderName(file, out string? version, )
 
             parser.Should().BeEquivalentTo(expected);
         }
@@ -45,9 +46,7 @@ namespace WillSoss.DbDeploy.Tests
         [InlineData("1.1.1.1.1 too many numbers.sql")]
         public void ShouldThrowExceptionOnInvalidFileName(string file)
         {
-            var parser = new VersionedScriptNameParser(new string[] { file });
-
-            var ex = Assert.Throws<InvalidScriptNameException>(() => parser.GetEnumerator().MoveNext());
+            var ex = Assert.Throws<InvalidScriptNameException>(() => Parser.ParseFolderName(file));
 
             ex.Path.Should().Be(file);
         }

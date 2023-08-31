@@ -10,8 +10,8 @@ namespace WillSoss.DbDeploy
         private readonly string[] _batches;
 
         public string Name { get; private set; } = string.Empty;
-        public Version Version { get; private set; } = new Version().FillZeros();
-        public bool IsVersioned => Version != new Version(0, 0);
+        public int? Number { get; private set; }
+        public bool IsNumbered => Number is not null;
         public string Location { get; }
         public string FileName { get; }
         public string Body { get; }
@@ -25,7 +25,7 @@ namespace WillSoss.DbDeploy
             if (!File.Exists(path))
                 throw new FileNotFoundException("File not found.", path);
 
-            SetVersionFromFileName(Path.GetFileName(path));
+            SetNumberFromFileName(Path.GetFileName(path));
 
             using var stream = File.OpenRead(path);
 
@@ -48,7 +48,7 @@ namespace WillSoss.DbDeploy
                 throw new ArgumentException($"Could not find embedded resource '{resource}'. Embedded resources found in in assembly '{assembly.FullName}': {found}");
             }
 
-            SetVersionFromFileName(filename);
+            SetNumberFromFileName(filename);
 
             Body = ReadStream(stream);
             _batches = GetBatches(Body);
@@ -57,17 +57,16 @@ namespace WillSoss.DbDeploy
             FileName = filename;
         }
 
-        void SetVersionFromFileName(string filename)
+        void SetNumberFromFileName(string filename)
         {
-            if (Parser.TryParseFileName(filename, out string? version, out string? name))
+            if (Parser.TryParseFileName(filename, out string? number, out string? name))
             {
-                // Version class requires at least major.minor
-                Version = Version.Parse(version!.IndexOf('.') < 0 ? $"{version}.0" : version).FillZeros();
+                Number = int.Parse(number!);
                 Name = name!;
             }
             else
             {
-                Version = new Version(0, 0, 0, 0);
+                Number = null;
                 Name = Path.GetFileNameWithoutExtension(filename);
             }
         }

@@ -59,7 +59,7 @@ namespace WillSoss.DbDeploy
 
         void SetVersionFromFileName(string filename)
         {
-            if (VersionedScriptNameParser.TryParse(filename, out string? version, out string? name))
+            if (Parser.TryParseFileName(filename, out string? version, out string? name))
             {
                 // Version class requires at least major.minor
                 Version = Version.Parse(version!.IndexOf('.') < 0 ? $"{version}.0" : version).FillZeros();

@@ -25,7 +25,9 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Scripts\" />
+    <Folder Include="Scripts\1.1\post\" />
+    <Folder Include="Scripts\1.1\_pre\" />
+    <Folder Include="Scripts\2\" />
   </ItemGroup>
 
   <ItemGroup>
@@ -43,13 +45,16 @@
     <None Update="Scripts - One Missing\1.1.1.1 one-one-one-one.sql">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Update="Scripts\1 one.sql">
+    <None Update="Scripts\1\post\1 one.sql">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Update="Scripts\1.1 one-one.sql">
+    <None Update="Scripts\1\_pre\1 one.sql">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Update="Scripts\1.1.1 one-one-one.sql">
+    <None Update="Scripts\1\_pre\1.1 one-one.sql">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="Scripts\1\_pre\1.1.1 one-one-one.sql">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
     <None Update="Scripts\1.1.1.1 one-one-one-one.sql">

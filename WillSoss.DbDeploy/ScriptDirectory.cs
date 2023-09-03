@@ -2,12 +2,12 @@
 {
     public class ScriptDirectory
     {
-        readonly List<Script> scripts = new List<Script>();
+        private readonly List<MigrationScript> _scripts = new();
 
         public string Path { get; }
-        public IEnumerable<Script> Scripts => scripts.OrderBy(s => s.Version);
+        public IEnumerable<MigrationScript> Scripts => _scripts.OrderBy(s => s.Number);
 
-        public ScriptDirectory(string path)
+        public ScriptDirectory(Version version, MigrationPhase phase, string path)
         { 
             if (string.IsNullOrWhiteSpace(path)) 
                 throw new ArgumentNullException(nameof(path));
@@ -19,12 +19,9 @@
 
             foreach (var file in Directory.EnumerateFiles(Path, "*.sql"))
             {
-                var script = new Script(file);
+                var script = new MigrationScript(version, phase, file);
 
-                if (!script.IsVersioned)
-                    throw new InvalidScriptNameException(file, "Scripts must be named in the format '#[.#[.#[.#]]]-name.sql'");
-
-                scripts.Add(script);
+                _scripts.Add(script);
             }
         }
     }

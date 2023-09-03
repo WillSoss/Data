@@ -10,8 +10,6 @@ namespace WillSoss.DbDeploy
         private readonly string[] _batches;
 
         public string Name { get; private set; } = string.Empty;
-        public int? Number { get; private set; }
-        public bool IsNumbered => Number is not null;
         public string Location { get; }
         public string FileName { get; }
         public string Body { get; }
@@ -24,8 +22,6 @@ namespace WillSoss.DbDeploy
 
             if (!File.Exists(path))
                 throw new FileNotFoundException("File not found.", path);
-
-            SetNumberFromFileName(Path.GetFileName(path));
 
             using var stream = File.OpenRead(path);
 
@@ -48,27 +44,11 @@ namespace WillSoss.DbDeploy
                 throw new ArgumentException($"Could not find embedded resource '{resource}'. Embedded resources found in in assembly '{assembly.FullName}': {found}");
             }
 
-            SetNumberFromFileName(filename);
-
             Body = ReadStream(stream);
             _batches = GetBatches(Body);
 
             Location = resource;
             FileName = filename;
-        }
-
-        void SetNumberFromFileName(string filename)
-        {
-            if (Parser.TryParseFileName(filename, out string? number, out string? name))
-            {
-                Number = int.Parse(number!);
-                Name = name!;
-            }
-            else
-            {
-                Number = null;
-                Name = Path.GetFileNameWithoutExtension(filename);
-            }
         }
 
         string ReadStream(Stream stream)

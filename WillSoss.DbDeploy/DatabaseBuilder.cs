@@ -8,7 +8,7 @@ namespace WillSoss.DbDeploy
         private static readonly Regex NamedScriptPattern = GetNamedScriptPattern();
 
         private readonly Func<DatabaseBuilder, Database> _build;
-        private readonly Dictionary<Version, Script> _migrations = new();
+        private readonly List<MigrationScript> _migrations = new();
         private readonly List<string> _productionKeywords = new() { "prod", "live" };
         private readonly Dictionary<string, (Script? Script, Func<Database, Task>? Action)> _actions = new();
 
@@ -21,7 +21,7 @@ namespace WillSoss.DbDeploy
         public int CommandTimeout { get; private set; } = 90;
         public int PostCreateDelay { get; private set; } = 0;
         public int PostDropDelay { get; private set; } = 0;
-        public IEnumerable<Script> MigrationScripts => _migrations.Values;
+        public IEnumerable<MigrationScript> MigrationScripts => _migrations;
         public IEnumerable<string> ProductionKeywords => _productionKeywords;
 
         IReadOnlyDictionary<string, Script> GetNamedScripts()
@@ -72,22 +72,18 @@ namespace WillSoss.DbDeploy
 
         public DatabaseBuilder AddMigrations(string directory)
         {
-            foreach (var script in new ScriptDirectory(directory).Scripts)
-            {
+            foreach (var script in new MigrationsDirectory(directory).Scripts)
                 AddMigration(script);
-            }
 
             return this;
         }
 
-        public DatabaseBuilder AddMigration(string path) => AddMigration(new Script(path));
-
-        public DatabaseBuilder AddMigration(Script script)
+        public DatabaseBuilder AddMigration(MigrationScript script)
         {
-            if (_migrations.ContainsKey(script.Version))
-                throw new InvalidScriptNameException(Path.Combine(script.Location, script.FileName), $"Version {script.Version} cannot be used more than once.");
+            if (_migrations.Any(s => s.Version == script.Version && s.Phase == script.Phase && s.Number == script.Number))
+                throw new InvalidScriptNameException(Path.Combine(script.Location, script.FileName), $"Migration scripts must have unique version, phase and numbers. {script.Version}/{script.Phase}/{script.Number} appears more than once.");
 
-            _migrations.Add(script.Version, script);
+            _migrations.Add(script);
 
             return this;
         }

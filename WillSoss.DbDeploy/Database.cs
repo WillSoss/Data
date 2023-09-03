@@ -5,7 +5,7 @@ namespace WillSoss.DbDeploy
 {
     public abstract class Database
     {
-        private readonly IEnumerable<Script> _migrations;
+        private readonly IEnumerable<MigrationScript> _migrations;
         private readonly string[] _productionKeywords;
         private readonly int _commandTimeout;
         private readonly int _postCreateDelay;
@@ -16,7 +16,12 @@ namespace WillSoss.DbDeploy
 
         public string? ConnectionString { get; }
         public int CommandTimeout => _commandTimeout;
-        public IEnumerable<Script> Migrations => _migrations.OrderBy(s => s.Version);
+        public IEnumerable<MigrationScript> Migrations => 
+            _migrations
+            .OrderBy(s => s.Version)
+            .ThenBy(s => s.Phase)
+            .ThenBy(s => s.Number);
+
         public Script? ResetScript { get; }
         public IReadOnlyDictionary<string, Script> NamedScripts { get; }
         public IReadOnlyDictionary<string, Func<Database, Task>> Actions { get; }
@@ -71,31 +76,29 @@ namespace WillSoss.DbDeploy
         /// <returns>The number of scripts applied to the database.</returns>
         public virtual async Task<int> MigrateTo(Version? version)
         {
-            version = version?.FillZeros();
-
             using var db = GetConnection();
 
             await db.EnsureOpenAsync();
 
             using var tx = db.BeginTransaction();
 
-            var applied = (await GetAppliedMigrations(db, tx)).Select(m => m.Version);
+            var applied = await GetAppliedMigrations(db, tx);
 
-            var latestApplied = applied.Max();
+            var latestApplied = applied.OrderBy(a => a.Version).ThenBy(a => a.Phase).ThenBy(a => a.Number).LastOrDefault();
 
-            var scriptsToApply = Migrations.Where(s => !applied.Contains(s.Version));
+            var scriptsToApply = Migrations.Where(s => !applied.Any(a => a.Version == s.Version && a.Phase == s.Phase && a.Number == s.Number));
 
             if (version is not null)
                 scriptsToApply = scriptsToApply.Where(s => s.Version <= version);
 
             if (scriptsToApply.Any())
             {
-                var scriptVersion = scriptsToApply.Select(m => m.Version).Min();
+                var scriptVersion = scriptsToApply.OrderBy(a => a.Version).ThenBy(a => a.Phase).ThenBy(a => a.Number).FirstOrDefault();
 
                 if (latestApplied is not null && scriptVersion is not null && scriptVersion < latestApplied)
                     throw new MigrationsNotAppliedInOrderException(latestApplied, scriptVersion);
 
-                await ExecuteScriptsAsync(scriptsToApply, db, tx, GetTokens(), true);
+                await ExecuteScriptsAsync(scriptsToApply, db, tx, GetTokens());
 
                 await tx.CommitAsync();
             }
@@ -160,14 +163,20 @@ namespace WillSoss.DbDeploy
             await tx.CommitAsync();
         }
 
-        public async Task ExecuteScriptsAsync(IEnumerable<Script> scripts, DbConnection db, DbTransaction? tx = null, Dictionary<string, string>? replacementTokens = null, bool recordMigration = false)
+        public async Task ExecuteScriptsAsync(IEnumerable<Script> scripts, DbConnection db, DbTransaction? tx = null, Dictionary<string, string>? replacementTokens = null)
         {
             foreach (var script in scripts)
             {
                 await ExecuteScriptAsync(script, db, tx, replacementTokens);
+            }
+        }
 
-                if (recordMigration)
-                    await RecordMigration(script, db, tx);
+        public async Task ExecuteScriptsAsync(IEnumerable<MigrationScript> scripts, DbConnection db, DbTransaction? tx = null, Dictionary<string, string>? replacementTokens = null)
+        {
+            foreach (var script in scripts)
+            {
+                await ExecuteScriptAsync(script, db, tx, replacementTokens);
+                await RecordMigration(script, db, tx);
             }
         }
 
@@ -201,6 +210,6 @@ namespace WillSoss.DbDeploy
         protected internal abstract string GetServerName();
         protected internal abstract Script GetMigrationsTableScript();
         protected internal abstract Task<IEnumerable<Migration>> GetAppliedMigrations(DbConnection db, DbTransaction? tx = null);
-        protected internal abstract Task RecordMigration(Script script, DbConnection db, DbTransaction? tx = null);
+        protected internal abstract Task RecordMigration(MigrationScript script, DbConnection db, DbTransaction? tx = null);
     }
 }

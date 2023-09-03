@@ -8,7 +8,7 @@ namespace WillSoss.DbDeploy
         private static readonly Regex filePattern = new Regex(@"^(?<number>\d+)([-_ ]+(?<name>[- \w]+)?)?\.sql$", RegexOptions.Compiled | RegexOptions.IgnoreCase);
 
         // https://regex101.com/r/1gu1g5/1
-        private readonly static Regex folderPattern = new Regex(@"^v?(?<version>\d+(\.\d+){0,3})([-_ ]+(?<name>[- \w\.]+)?)?$", RegexOptions.Compiled | RegexOptions.IgnoreCase);
+        private readonly static Regex folderPattern = new Regex(@"^v?(?<version>\d+(\.\d+){1,3})([-_ ]+(?<name>[- \w\.]+)?)?$", RegexOptions.Compiled | RegexOptions.IgnoreCase);
 
         internal static (string version, string name) ParseFileName(string file)
         {
@@ -35,7 +35,9 @@ namespace WillSoss.DbDeploy
             else
             {
                 number = match.Groups["number"].Captures[0].Value;
-                name = match.Groups["name"].Captures[0].Value;
+                name = match.Groups.ContainsKey("name") && match.Groups["name"].Captures.Count > 0 ?
+                    match.Groups["name"].Captures[0].Value :
+                    string.Empty;
 
                 return true;
             }
@@ -66,7 +68,9 @@ namespace WillSoss.DbDeploy
             else
             {
                 version = match.Groups["version"].Captures[0].Value;
-                name = match.Groups["name"].Captures[0].Value;
+                name = match.Groups.ContainsKey("name") && match.Groups["name"].Captures.Count > 0 ?
+                    match.Groups["name"].Captures[0].Value :
+                    string.Empty;
 
                 return true;
             }

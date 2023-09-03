@@ -9,6 +9,15 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="Scripts\1.1\**" />
+    <Compile Remove="Scripts\2\**" />
+    <EmbeddedResource Remove="Scripts\1.1\**" />
+    <EmbeddedResource Remove="Scripts\2\**" />
+    <None Remove="Scripts\1.1\**" />
+    <None Remove="Scripts\2\**" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="fluentassertions" Version="6.11.0" />
     <PackageReference Include="Microsoft.Data.SqlClient" Version="5.1.1" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.7.1" />
@@ -25,39 +34,66 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Scripts\1.1\post\" />
-    <Folder Include="Scripts\1.1\_pre\" />
-    <Folder Include="Scripts\2\" />
-  </ItemGroup>
-
-  <ItemGroup>
     <ProjectReference Include="..\WillSoss.DbDeploy.Sql\WillSoss.DbDeploy.Sql.csproj" />
     <ProjectReference Include="..\WillSoss.DbDeploy\WillSoss.DbDeploy.csproj" />
   </ItemGroup>
 
   <ItemGroup>
-    <None Update="Scripts - One Missing\1 one.sql">
+    <None Update="Scripts - One Missing\0.1\post\1 one.sql">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Update="Scripts - One Missing\1.1.1 one-one-one.sql">
+    <None Update="Scripts - One Missing\0.1\_pre\01 one.sql">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Update="Scripts - One Missing\1.1.1.1 one-one-one-one.sql">
+    <None Update="Scripts - One Missing\0.1\_pre\02 two.sql">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Update="Scripts\1\post\1 one.sql">
+    <None Update="Scripts - One Missing\v1.0\post\01 one.sql">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Update="Scripts\1\_pre\1 one.sql">
+    <None Update="Scripts - One Missing\v1.0\post\02 two.sql">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Update="Scripts\1\_pre\1.1 one-one.sql">
+    <None Update="Scripts - One Missing\v1.0\post\03 three.sql">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Update="Scripts\1\_pre\1.1.1 one-one-one.sql">
+    <None Update="Scripts - One Missing\v1.0\_pre\01 one.sql">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Update="Scripts\1.1.1.1 one-one-one-one.sql">
+    <None Update="Scripts - One Missing\v1.0\_pre\02 two.sql">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="Scripts - One Missing\v1.0\_pre\03 three.sql">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="Scripts\0.1\post\1 one.sql">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="Scripts\0.1\_pre\01 one.sql">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="Scripts\0.1\_pre\02 two.sql">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="Scripts\0.1\_pre\03 three.sql">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="Scripts\v1.0\post\01 one.sql">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="Scripts\v1.0\post\02 two.sql">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="Scripts\v1.0\post\03 three.sql">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="Scripts\v1.0\_pre\01 one.sql">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="Scripts\v1.0\_pre\02 two.sql">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="Scripts\v1.0\_pre\03 three.sql">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
   </ItemGroup>

@@ -48,14 +48,16 @@ namespace WillSoss.DbDeploy.Sql
 
         protected internal override Script GetMigrationsTableScript() => new Script(DefaultScriptAssembly, DefaultScriptNamespace, "build-migration-table.sql");
 
-        protected internal override async Task RecordMigration(Script script, DbConnection db, DbTransaction? tx = null)
+        protected internal override async Task RecordMigration(MigrationScript script, DbConnection db, DbTransaction? tx = null)
         {
-			await db.ExecuteAsync("insert into cfg.migration (major, minor, build, rev, [description]) values (@major, @minor, @build, @rev, @desc);", new
+			await db.ExecuteAsync("insert into cfg.migration (major, minor, build, rev, phase, number, [description]) values (@major, @minor, @build, @rev, @phase, @number, @desc);", new
 			{
 				major = script.Version.Major,
 				minor = script.Version.Minor,
-				build = Math.Max(script.Version.Build, 0),
-				rev = Math.Max(script.Version.Revision, 0),
+				build = script.Version.Build,
+				rev = script.Version.Revision,
+				phase = script.Phase,
+				number = script.Number,
 				desc = script.Name
 			}, tx, CommandTimeout);
         }

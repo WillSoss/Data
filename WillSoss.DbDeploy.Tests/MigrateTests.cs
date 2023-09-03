@@ -25,7 +25,7 @@ namespace WillSoss.DbDeploy.Tests
                 .Build();
 
             // Assert
-            db.Migrations.Count().Should().Be(4);
+            db.Migrations.Count().Should().Be(10);
         }
 
         [Fact]
@@ -45,12 +45,12 @@ namespace WillSoss.DbDeploy.Tests
             var count = await db.MigrateToLatest();
 
             // Assert
-            count.Should().Be(4);
+            count.Should().Be(10);
 
             var migrations = await db.GetAppliedMigrations(db.GetConnection());
 
             // 4 scripts + database create
-            migrations.Count().Should().Be(5);
+            migrations.Count().Should().Be(11);
         }
 
         [Fact]
@@ -66,18 +66,18 @@ namespace WillSoss.DbDeploy.Tests
 
             await db.Create();
 
-            await db.MigrateTo(new Version(1, 0));
+            await db.MigrateTo(new Version(0, 1));
 
             // Act
             var count = await db.MigrateToLatest();
 
             // Assert
-            count.Should().Be(3);
+            count.Should().Be(6);
 
             var migrations = await db.GetAppliedMigrations(db.GetConnection());
 
-            // 4 scripts + database create
-            migrations.Count().Should().Be(5);
+            // 10 scripts + database create
+            migrations.Count().Should().Be(11);
         }
 
         [Fact]

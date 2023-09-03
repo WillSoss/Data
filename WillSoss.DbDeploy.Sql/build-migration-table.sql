@@ -12,19 +12,23 @@ begin
         minor int not null,
         build int not null,
         rev int not null,
+        phase int not null,
+        number int not null,
         [description] varchar(100) not null default (''),
         applied_at datetime not null constraint df_migration_applied_at default (getutcdate()),
-        constraint pk_migration primary key clustered (major, minor, build, rev)
+        constraint pk_migration primary key clustered (major, minor, build, rev, phase, number)
     );
 
-    insert into cfg.migration (major, minor, build, rev, [description], applied_at) values 
-        (0, 0, 0, 0, 'Database Created', getutcdate());
+    insert into cfg.migration (major, minor, build, rev, phase, number, [description], applied_at) values 
+        (0, 0, 0, 0, 0, 0, 'Database Created', getutcdate());
 
 end;
 go
 
 create or alter view cfg.migration_detail as
-    select  concat(major, '.', minor, '.', build, '.', rev) [version], 
+    select  concat(major, '.', minor, iif(build >= 0, concat('.', build, iif(rev >= 0, concat('.', rev), '')), '')) [version], 
+            phase,
+            number,
             [description], 
             applied_at
     from    cfg.migration;

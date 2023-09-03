@@ -14,6 +14,9 @@ jobs:
       - name: Set VERSION variable from tag
         run: echo "VERSION=${GITHUB_REF/refs\/tags\/v/}" >> $GITHUB_ENV
 
+      - name: Echo VERSION variable
+        run: echo ${VERSION}
+
       - name: Package WillSoss.DbDeploy
         run: dotnet pack WillSoss.DbDeploy/WillSoss.DbDeploy.csproj -c Release -o feeds/nuget /p:Version=${VERSION}
 

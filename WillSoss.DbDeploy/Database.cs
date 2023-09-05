@@ -151,7 +151,7 @@ namespace WillSoss.DbDeploy
         {
             using var db = GetConnection();
 
-            if (!@unsafe && IsProd(db))
+            if (!@unsafe && IsProduction(db))
                 throw new InvalidOperationException("Cannot reset a production database. The connection string contains a production keyword.");
 
             if (ResetScript is null)
@@ -170,7 +170,7 @@ namespace WillSoss.DbDeploy
         {
             using var db = GetConnectionWithoutDatabase();
 
-            if (!@unsafe && IsProd(db))
+            if (!@unsafe && IsProduction(db))
                 throw new InvalidOperationException("Cannot drop a production database. The connection string contains a production keyword.");
 
             await ExecuteScriptAsync(await GetDropScript(), db, replacementTokens: GetTokens());
@@ -181,9 +181,9 @@ namespace WillSoss.DbDeploy
             }
         }
 
-        private bool IsProd(DbConnection db)
+        public bool IsProduction(DbConnection? db = null)
         {
-            var cs = db.ConnectionString.ToLower();
+            var cs = (db ?? GetConnection()).ConnectionString.ToLower();
 
             return _productionKeywords.Any(k => cs.Contains(k, StringComparison.InvariantCultureIgnoreCase));
         }
@@ -282,7 +282,7 @@ namespace WillSoss.DbDeploy
         protected internal abstract Task<IEnumerable<Migration>> GetAppliedMigrations(DbConnection? db = null, DbTransaction? tx = null);
         protected internal abstract Task RecordMigration(MigrationScript script, DbConnection db, DbTransaction? tx = null);
 
-        public async Task<IEnumerable<MigrationScript>> GetUnappliedMigrations()
+        public async Task<IEnumerable<MigrationScript>> GetUnappliedMigrations(DbConnection? db = null)
         {
             var applied = await GetAppliedMigrations();
 
@@ -290,5 +290,7 @@ namespace WillSoss.DbDeploy
 
             return Migrations.Where(s => !applied.Any(a => a.Version == s.Version && a.Phase == s.Phase && a.Number == s.Number));
         }
+
+        public async Task<Version?> GetVersion() => (await GetAppliedMigrations()).LastOrDefault()?.Version;
     }
 }

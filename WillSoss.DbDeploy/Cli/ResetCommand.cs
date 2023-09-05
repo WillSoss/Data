@@ -41,22 +41,5 @@ namespace WillSoss.DbDeploy.Cli
 
             _logger.LogInformation("Reset complete for database {0} on {1}.", db.GetDatabaseName(), db.GetServerName());
         }
-
-        internal static Command Create(IServiceCollection services)
-        {
-            var command = new Command("reset", "Runs the reset script on the database. Can be used to clean up data after test runs."); ;
-
-            command.AddOption(CliOptions.ConnectionStringOption);
-            command.AddOption(CliOptions.UnsafeOption);
-
-            command.SetHandler((cs, @unsafe) => services.AddTransient<ICliCommand>(s => new ResetCommand(
-                s.GetRequiredService<DatabaseBuilder>(),
-                cs,
-                @unsafe,
-                s.GetRequiredService<ILogger<ResetCommand>>()
-                )), CliOptions.ConnectionStringOption, CliOptions.UnsafeOption);
-
-            return command;
-        }
     }
 }

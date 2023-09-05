@@ -32,7 +32,7 @@ namespace WillSoss.DbDeploy.Tests
             // Assert
             var migrations = await db.GetConnection().QueryAsync<Migration>("select * from cfg.migration_detail");
 
-            migrations.Count().Should().Be(1); ;
+            migrations.Count().Should().Be(1);
             migrations.Should().BeEquivalentTo(new[]
             {
                 new Migration

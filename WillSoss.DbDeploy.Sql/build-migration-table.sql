@@ -15,12 +15,12 @@ begin
         phase int not null,
         number int not null,
         [description] varchar(100) not null default (''),
-        applied_at datetime not null constraint df_migration_applied_at default (getutcdate()),
+        applied_at datetimeoffset not null constraint df_migration_applied_at default (sysutcdatetime()),
         constraint pk_migration primary key clustered (major, minor, build, rev, phase, number)
     );
 
     insert into cfg.migration (major, minor, build, rev, phase, number, [description], applied_at) values 
-        (0, 0, 0, 0, 0, 0, 'Database Created', getutcdate());
+        (0, 0, -1, -1, 0, 0, 'Database Created', sysutcdatetime());
 
 end;
 go

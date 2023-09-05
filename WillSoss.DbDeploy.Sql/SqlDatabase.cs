@@ -62,8 +62,8 @@ namespace WillSoss.DbDeploy.Sql
 			}, tx, CommandTimeout);
         }
 
-        protected internal override async Task<IEnumerable<Migration>> GetAppliedMigrations(DbConnection db, DbTransaction? tx = null) =>
-			await db.QueryAsync<Migration>(@"select * from cfg.migration_detail;", new { }, tx, CommandTimeout);
+        protected internal override async Task<IEnumerable<Migration>> GetAppliedMigrations(DbConnection db = null, DbTransaction? tx = null) =>
+			await (db ?? GetConnection()).QueryAsync<Migration>(@"select * from cfg.migration_detail;", new { }, tx, CommandTimeout);
 
         protected override async Task ExecuteScriptAsync(string sql, DbConnection db, DbTransaction? tx = null)
 		{

@@ -76,5 +76,14 @@ namespace WillSoss.DbDeploy.Sql
 				throw new SqlExceptionWithSource(ex, sql);
 			}
 		}
-	}
+
+        public override async Task<bool> Exists()
+        {
+			using var db = GetConnectionWithoutDatabase();
+
+			var exists = await db.ExecuteScalarAsync<int?>("select 1 from sys.sysdatabases where name = @database;", new { database = GetDatabaseName() });
+
+			return exists == 1;
+        }
+    }
 }

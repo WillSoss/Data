@@ -273,6 +273,7 @@ namespace WillSoss.DbDeploy
             { "database", GetDatabaseName() }
         };
 
+        public abstract Task<bool> Exists();
         protected internal abstract DbConnection GetConnection();
         protected internal abstract DbConnection GetConnectionWithoutDatabase();
         protected internal abstract string GetDatabaseName();

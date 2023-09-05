@@ -1,5 +1,7 @@
-﻿using System.Data;
+﻿using System;
+using System.Data;
 using System.Data.Common;
+using System.Net.Security;
 
 namespace WillSoss.DbDeploy
 {
@@ -67,14 +69,14 @@ namespace WillSoss.DbDeploy
         /// Builds the database using the <see cref="Migrations"/>.
         /// </summary>
         /// <returns>The number of scripts applied to the database.</returns>
-        public virtual async Task<int> MigrateToLatest() => await MigrateTo(null);
+        public virtual async Task<int> MigrateToLatest() => await MigrateTo(null, null);
 
         /// <summary>
         /// Builds the database using the <see cref="Migrations"/>.
         /// </summary>
         /// <param name="version">Applies builds scripts up to the specified version.</param>
         /// <returns>The number of scripts applied to the database.</returns>
-        public virtual async Task<int> MigrateTo(Version? version)
+        public virtual async Task<int> MigrateTo(Version? version, MigrationPhase? phase = null)
         {
             using var db = GetConnection();
 
@@ -98,12 +100,51 @@ namespace WillSoss.DbDeploy
                 if (latestApplied is not null && scriptVersion is not null && scriptVersion < latestApplied)
                     throw new MigrationsNotAppliedInOrderException(latestApplied, scriptVersion);
 
+                scriptsToApply = FilterScripts(scriptsToApply, phase);
+
                 await ExecuteScriptsAsync(scriptsToApply, db, tx, GetTokens());
 
                 await tx.CommitAsync();
             }
 
             return scriptsToApply.Count();
+        }
+
+        private IEnumerable<MigrationScript> FilterScripts(IEnumerable<MigrationScript> scripts, MigrationPhase? phase)
+        {
+            List<MigrationScript> filteredScripts = new();
+
+            if (phase == MigrationPhase.Pre)
+            {
+                bool foundPost = false;
+                foreach (var script in scripts)
+                {
+                    if (script.Phase == MigrationPhase.Post)
+                        foundPost = true;
+                    else if (foundPost)
+                        throw new UnableToMigrateException("Unable to apply migration scripts. When applying only pre-migration scripts, a pre-deployment script cannot come after a post-migration script. Try specifying the version to migrate to if migrating to latest is not desired.");
+                    else
+                        filteredScripts.Add(script);
+                }
+
+                return filteredScripts;
+            }
+            else if (phase == MigrationPhase.Post)
+            {
+                foreach (var script in scripts)
+                {
+                    if (script.Phase == MigrationPhase.Pre)
+                        throw new UnableToMigrateException("Unable to apply migration scripts. When applying only post-migration scripts, all pre-deployment scripts must already be applied. Try specifying the version to migrate to if migrating to latest is not desired.");
+
+                    filteredScripts.Add(script);
+                }
+
+                return filteredScripts;
+            }
+            else
+            {
+                return scripts;
+            }
         }
 
         public virtual async Task Reset(bool @unsafe = false)
@@ -145,6 +186,34 @@ namespace WillSoss.DbDeploy
             var cs = db.ConnectionString.ToLower();
 
             return _productionKeywords.Any(k => cs.Contains(k, StringComparison.InvariantCultureIgnoreCase));
+        }
+
+        public virtual async Task GetStatus(Version? version = null, MigrationPhase? phase = null)
+        {
+            using var db = GetConnection();
+
+            await db.EnsureOpenAsync();
+
+            using var tx = db.BeginTransaction();
+
+            var applied = await GetAppliedMigrations(db, tx);
+
+            var latestApplied = applied.OrderBy(a => a.Version).ThenBy(a => a.Phase).ThenBy(a => a.Number).LastOrDefault();
+
+            var scriptsToApply = Migrations.Where(s => !applied.Any(a => a.Version == s.Version && a.Phase == s.Phase && a.Number == s.Number));
+
+            if (version is not null)
+                scriptsToApply = scriptsToApply.Where(s => s.Version <= version);
+
+            if (scriptsToApply.Any())
+            {
+                var scriptVersion = scriptsToApply.OrderBy(a => a.Version).ThenBy(a => a.Phase).ThenBy(a => a.Number).FirstOrDefault();
+
+                if (latestApplied is not null && scriptVersion is not null && scriptVersion < latestApplied)
+                    throw new MigrationsNotAppliedInOrderException(latestApplied, scriptVersion);
+
+
+            }
         }
 
         public virtual async Task ExecuteNamedScript(string name)

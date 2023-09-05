@@ -87,6 +87,13 @@ namespace WillSoss.DbDeploy
 
             return this;
         }
+        public DatabaseBuilder AddMigrations(IEnumerable<MigrationScript> scripts)
+        {
+            foreach (var script in scripts)
+                AddMigration(script);
+
+            return this;
+        }
 
         public DatabaseBuilder WithCreateScript(string path) => WithCreateScript(new Script(path));
 

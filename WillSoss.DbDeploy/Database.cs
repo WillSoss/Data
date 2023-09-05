@@ -279,7 +279,16 @@ namespace WillSoss.DbDeploy
         protected internal abstract string GetDatabaseName();
         protected internal abstract string GetServerName();
         protected internal abstract Script GetMigrationsTableScript();
-        protected internal abstract Task<IEnumerable<Migration>> GetAppliedMigrations(DbConnection db = null, DbTransaction? tx = null);
+        protected internal abstract Task<IEnumerable<Migration>> GetAppliedMigrations(DbConnection? db = null, DbTransaction? tx = null);
         protected internal abstract Task RecordMigration(MigrationScript script, DbConnection db, DbTransaction? tx = null);
+
+        public async Task<IEnumerable<MigrationScript>> GetUnappliedMigrations()
+        {
+            var applied = await GetAppliedMigrations();
+
+            var latestApplied = applied.OrderBy(a => a.Version).ThenBy(a => a.Phase).ThenBy(a => a.Number).LastOrDefault();
+
+            return Migrations.Where(s => !applied.Any(a => a.Version == s.Version && a.Phase == s.Phase && a.Number == s.Number));
+        }
     }
 }

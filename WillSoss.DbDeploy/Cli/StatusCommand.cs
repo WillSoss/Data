@@ -35,6 +35,20 @@ namespace WillSoss.DbDeploy.Cli
             var at = (await db.GetAppliedMigrations()).LastOrDefault();
 
             Console.WriteLine($"Database {db.GetDatabaseName()} on server {db.GetServerName()} is at version {at!.Version} ({at} - {at.Description}).");
+            Console.WriteLine();
+
+            var unapplied = await db.GetUnappliedMigrations();
+
+            if (unapplied.Count() == 0)
+            {
+                Console.WriteLine("There are no unapplied migrations. The database is up to date.");
+            }
+            else
+            {
+                Console.WriteLine("Unapplied migrations:");
+                foreach (var script in unapplied)
+                    Console.WriteLine(script);
+            }
 
             //if (_drop)
             //{

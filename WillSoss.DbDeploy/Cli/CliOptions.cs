@@ -24,5 +24,9 @@ namespace WillSoss.DbDeploy.Cli
         internal static Option<bool> DropOption = new Option<bool>(new[] { "--drop", "-d" }, "Optional. Drops the database if it exists, then recreates and migrates.");
 
         internal static Option<bool> UnsafeOption = new Option<bool>(new[] { "--unsafe" }, "Use with extreme caution. Disables destructive action prevention for production databases using keyword protection.");
+
+        internal static Option<bool> PreOption = new Option<bool>(new[] { "--pre" }, "Optional. Limits migrations to pre-deployment migration scripts.");
+
+        internal static Option<bool> PostOption = new Option<bool>(new[] { "--post" }, "Optional. Limits migrations to post-deployment migration scripts.");
     }
 }

@@ -32,9 +32,17 @@ namespace WillSoss.DbDeploy.Tests
             // Assert
             var migrations = await db.GetConnection().QueryAsync<Migration>("select * from cfg.migration_detail");
 
-            migrations.Count().Should().Be(1);
-            migrations.Single().Version.Should().Be(new Version(0, 0, 0, 0));
-            migrations.Single().Description.Should().Be("Database Created");
+            migrations.Count().Should().Be(1); ;
+            migrations.Should().BeEquivalentTo(new[]
+            {
+                new Migration
+                {
+                    Version = new Version(0,0),
+                    Phase = MigrationPhase.Pre,
+                    Number = 0,
+                    Description = "Database Created"
+                }
+            });
         }
     }
 }

@@ -8,14 +8,12 @@ namespace WillSoss.DbDeploy.Cli
     {
         private DatabaseBuilder _builder;
         private readonly string? _connectionString;
-        private readonly Version? _version;
         private readonly ILogger _logger;
 
-        public StatusCommand(DatabaseBuilder builder, string? connectionString, Version? version, ILogger<StatusCommand> logger)
+        public StatusCommand(DatabaseBuilder builder, string? connectionString, ILogger<StatusCommand> logger)
         {
             _builder = builder;
             _connectionString = connectionString;
-            _version = version;
             _logger = logger;
         }
 
@@ -49,27 +47,6 @@ namespace WillSoss.DbDeploy.Cli
                 foreach (var script in unapplied)
                     Console.WriteLine(script);
             }
-
-            //if (_drop)
-            //{
-            //    _logger.LogInformation("Dropping database {0} on {1}.", db.GetDatabaseName(), db.GetServerName());
-
-            //    await db.Drop();
-            //}
-
-            //_logger.LogInformation("Creating database {0} on {1}.", db.GetDatabaseName(), db.GetServerName());
-
-            //await db.Create();
-
-            //if (_version is null)
-            //    _logger.LogInformation("Migrating database {0} on {1} to latest.", db.GetDatabaseName(), db.GetServerName());
-
-            //else
-            //    _logger.LogInformation("Migrating database {0} on {1} to version {2}.", db.GetDatabaseName(), db.GetServerName(), _version);
-
-            //await db.MigrateTo(_version);
-
-            //_logger.LogInformation("Deployment complete for database {0} on {1}.", db.GetDatabaseName(), db.GetServerName());
         }
 
         internal static RootCommand Create(IServiceCollection services)
@@ -77,14 +54,12 @@ namespace WillSoss.DbDeploy.Cli
             var command = new RootCommand("Displays the migration status of the database."); ;
 
             command.AddOption(CliOptions.ConnectionStringOption);
-            command.AddOption(CliOptions.VersionOption);
 
-            command.SetHandler((cs, version) => services.AddTransient<ICliCommand>(s => new StatusCommand(
+            command.SetHandler((cs) => services.AddTransient<ICliCommand>(s => new StatusCommand(
                 s.GetRequiredService<DatabaseBuilder>(),
                 cs,
-                version,
                 s.GetRequiredService<ILogger<StatusCommand>>()
-                )), CliOptions.ConnectionStringOption, CliOptions.VersionOption);
+                )), CliOptions.ConnectionStringOption);
 
             return command;
         }

@@ -9,15 +9,13 @@ namespace WillSoss.DbDeploy.Cli
         private DatabaseBuilder _builder;
         private readonly string? _connectionString;
         private readonly Version? _version;
-        private readonly bool _drop;
         private readonly ILogger _logger;
 
-        public StatusCommand(DatabaseBuilder builder, string? connectionString, Version? version, bool drop, ILogger<DeployCommand> logger)
+        public StatusCommand(DatabaseBuilder builder, string? connectionString, Version? version, ILogger<StatusCommand> logger)
         {
             _builder = builder;
             _connectionString = connectionString;
             _version = version;
-            _drop = drop;
             _logger = logger;
         }
 
@@ -34,43 +32,45 @@ namespace WillSoss.DbDeploy.Cli
 
             var db = _builder.Build();
 
-            if (_drop)
-            {
-                _logger.LogInformation("Dropping database {0} on {1}.", db.GetDatabaseName(), db.GetServerName());
+            var at = (await db.GetAppliedMigrations()).LastOrDefault();
 
-                await db.Drop();
-            }
+            Console.WriteLine($"Database {db.GetDatabaseName()} on server {db.GetServerName()} is at version {at!.Version} ({at} - {at.Description}).");
 
-            _logger.LogInformation("Creating database {0} on {1}.", db.GetDatabaseName(), db.GetServerName());
+            //if (_drop)
+            //{
+            //    _logger.LogInformation("Dropping database {0} on {1}.", db.GetDatabaseName(), db.GetServerName());
 
-            await db.Create();
+            //    await db.Drop();
+            //}
 
-            if (_version is null)
-                _logger.LogInformation("Migrating database {0} on {1} to latest.", db.GetDatabaseName(), db.GetServerName());
+            //_logger.LogInformation("Creating database {0} on {1}.", db.GetDatabaseName(), db.GetServerName());
 
-            else
-                _logger.LogInformation("Migrating database {0} on {1} to version {2}.", db.GetDatabaseName(), db.GetServerName(), _version);
+            //await db.Create();
 
-            await db.MigrateTo(_version);
+            //if (_version is null)
+            //    _logger.LogInformation("Migrating database {0} on {1} to latest.", db.GetDatabaseName(), db.GetServerName());
 
-            _logger.LogInformation("Deployment complete for database {0} on {1}.", db.GetDatabaseName(), db.GetServerName());
+            //else
+            //    _logger.LogInformation("Migrating database {0} on {1} to version {2}.", db.GetDatabaseName(), db.GetServerName(), _version);
+
+            //await db.MigrateTo(_version);
+
+            //_logger.LogInformation("Deployment complete for database {0} on {1}.", db.GetDatabaseName(), db.GetServerName());
         }
 
         internal static RootCommand Create(IServiceCollection services)
         {
-            var command = new RootCommand("Creates the database if it does not exist, then migrates to latest."); ;
+            var command = new RootCommand("Displays the migration status of the database."); ;
 
             command.AddOption(CliOptions.ConnectionStringOption);
             command.AddOption(CliOptions.VersionOption);
-            command.AddOption(CliOptions.DropOption);
 
-            command.SetHandler((cs, version, drop) => services.AddTransient<ICliCommand>(s => new DeployCommand(
+            command.SetHandler((cs, version) => services.AddTransient<ICliCommand>(s => new StatusCommand(
                 s.GetRequiredService<DatabaseBuilder>(),
                 cs,
                 version,
-                drop,
-                s.GetRequiredService<ILogger<DeployCommand>>()
-                )), CliOptions.ConnectionStringOption, CliOptions.VersionOption, CliOptions.DropOption);
+                s.GetRequiredService<ILogger<StatusCommand>>()
+                )), CliOptions.ConnectionStringOption, CliOptions.VersionOption);
 
             return command;
         }

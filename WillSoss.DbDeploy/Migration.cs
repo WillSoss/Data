@@ -13,7 +13,7 @@
         public int Number { get; set; }
 
         public string Description { get; set; } = string.Empty;
-        public DateTime AppliedAt { get; set; }
+        public DateTimeOffset AppliedAt { get; set; }
 
         public override string ToString() => $"{Version}/{Phase}/{Number}";
     }

@@ -279,7 +279,7 @@ namespace WillSoss.DbDeploy
         protected internal abstract string GetDatabaseName();
         protected internal abstract string GetServerName();
         protected internal abstract Script GetMigrationsTableScript();
-        protected internal abstract Task<IEnumerable<Migration>> GetAppliedMigrations(DbConnection db, DbTransaction? tx = null);
+        protected internal abstract Task<IEnumerable<Migration>> GetAppliedMigrations(DbConnection db = null, DbTransaction? tx = null);
         protected internal abstract Task RecordMigration(MigrationScript script, DbConnection db, DbTransaction? tx = null);
     }
 }

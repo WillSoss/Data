@@ -189,6 +189,34 @@ namespace WillSoss.DbDeploy
             return _productionKeywords.Any(k => cs.Contains(k, StringComparison.InvariantCultureIgnoreCase));
         }
 
+        public virtual async Task GetStatus(Version? version = null, MigrationPhase? phase = null)
+        {
+            using var db = GetConnection();
+
+            await db.EnsureOpenAsync();
+
+            using var tx = db.BeginTransaction();
+
+            var applied = await GetAppliedMigrations(db, tx);
+
+            var latestApplied = applied.OrderBy(a => a.Version).ThenBy(a => a.Phase).ThenBy(a => a.Number).LastOrDefault();
+
+            var scriptsToApply = Migrations.Where(s => !applied.Any(a => a.Version == s.Version && a.Phase == s.Phase && a.Number == s.Number));
+
+            if (version is not null)
+                scriptsToApply = scriptsToApply.Where(s => s.Version <= version);
+
+            if (scriptsToApply.Any())
+            {
+                var scriptVersion = scriptsToApply.OrderBy(a => a.Version).ThenBy(a => a.Phase).ThenBy(a => a.Number).FirstOrDefault();
+
+                if (latestApplied is not null && scriptVersion is not null && scriptVersion < latestApplied)
+                    throw new MigrationsNotAppliedInOrderException(latestApplied, scriptVersion);
+
+
+            }
+        }
+
         public virtual async Task ExecuteNamedScript(string name)
         {
             if (!NamedScripts.ContainsKey(name))

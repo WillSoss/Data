@@ -30,38 +30,62 @@ namespace WillSoss.DbDeploy.Cli
 
             var db = _builder.Build();
 
-            var at = (await db.GetAppliedMigrations()).LastOrDefault();
-
-            Console.WriteLine($"Database {db.GetDatabaseName()} on server {db.GetServerName()} is at version {at!.Version} ({at} - {at.Description}).");
-            Console.WriteLine();
-
             var unapplied = await db.GetUnappliedMigrations();
 
-            if (unapplied.Count() == 0)
+            Console.WriteLine();
+
+            await ConsoleMessages.WriteDatabaseInfo(db);
+
+            Console.WriteLine();
+
+            if (unapplied?.Count() == 0)
             {
                 Console.WriteLine("There are no unapplied migrations. The database is up to date.");
             }
             else
             {
-                Console.WriteLine("Unapplied migrations:");
-                foreach (var script in unapplied)
-                    Console.WriteLine(script);
+                Console.WriteLine(" Migrations not applied to database:");
+                Console.WriteLine();
+
+                foreach (var v in unapplied!.GroupBy(m => m.Version))
+                {
+                    Console.WriteLine($" Version {v.Key}");
+                    Console.WriteLine();
+
+                    foreach (var p in v.GroupBy(v => v.Phase))
+                    {
+                        Console.WriteLine($"   {p.Key}-deployment scripts");
+
+                        foreach (var script in p)
+                        {
+                            Console.Write($"     Script ");
+                            ConsoleMessages.WriteColorLine(script.FileName, ConsoleColor.Blue);
+                        }
+
+                        Console.WriteLine();
+                    }
+                }
             }
         }
 
-        internal static RootCommand Create(IServiceCollection services)
+
+
+        private void WriteCaution(string text)
         {
-            var command = new RootCommand("Displays the migration status of the database."); ;
+            var background = Console.BackgroundColor;
+            var foreground = Console.ForegroundColor;
 
-            command.AddOption(CliOptions.ConnectionStringOption);
+            Console.BackgroundColor = ConsoleColor.DarkYellow;
+            Console.ForegroundColor = ConsoleColor.White;
 
-            command.SetHandler((cs) => services.AddTransient<ICliCommand>(s => new StatusCommand(
-                s.GetRequiredService<DatabaseBuilder>(),
-                cs,
-                s.GetRequiredService<ILogger<StatusCommand>>()
-                )), CliOptions.ConnectionStringOption);
+            Console.Write($" !! CAUTION !! {text} ");
 
-            return command;
+            Console.BackgroundColor = background;
+            Console.ForegroundColor = foreground;
+
+            Console.WriteLine();
+            Console.WriteLine();
         }
+
     }
 }

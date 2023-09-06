@@ -60,26 +60,5 @@ namespace WillSoss.DbDeploy.Cli
                 _logger.LogError("A script or action named {0} could not be found.", _action);
             }
         }
-
-        internal static Command Create(IServiceCollection services)
-        {
-            var command = new Command("run", "Executes a script or action."); ;
-
-            var arg = new Argument<string?>("script", "The script or action to run.")
-            {
-                Arity = ArgumentArity.ExactlyOne
-            };
-            
-            command.AddArgument(arg);
-
-            command.SetHandler((cs, action) => services.AddTransient<ICliCommand>(s => new RunCommand(
-                s.GetRequiredService<DatabaseBuilder>(),
-                cs,
-                action,
-                s.GetRequiredService<ILogger<RunCommand>>()
-                )), CliOptions.ConnectionStringOption, arg);
-
-            return command;
-        }
     }
 }

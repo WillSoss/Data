@@ -44,15 +44,16 @@ namespace WillSoss.DbDeploy
 
         static CommandLineBuilder GetCommandLineBuilder(IServiceCollection services)
         {
-            var root = StatusCommand.Create(services);
-            root.AddGlobalOption(CliOptions.ConnectionStringOption);
+            var root = new RootCommand();
+            root.AddGlobalOption(CliOptions.ConnectionString);
 
-            root.AddCommand(DeployCommand.Create(services));
-            root.AddCommand(CreateCommand.Create(services));
-            root.AddCommand(DropCommand.Create(services));
-            root.AddCommand(MigrateCommand.Create(services));
-            root.AddCommand(ResetCommand.Create(services));
-            root.AddCommand(RunCommand.Create(services));
+            root.AddCommand(CliCommands.Status(services));
+            root.AddCommand(CliCommands.Drop(services));
+            root.AddCommand(CliCommands.Create(services));
+            root.AddCommand(CliCommands.Migrate(services));
+            root.AddCommand(CliCommands.Deploy(services));
+            root.AddCommand(CliCommands.Reset(services));
+            root.AddCommand(CliCommands.Run(services));
 
             return new CommandLineBuilder(root);
         }

@@ -1,12 +1,10 @@
-﻿using Microsoft.Data.SqlClient;
-
-namespace WillSoss.DbDeploy.Sql
+﻿namespace WillSoss.DbDeploy
 {
     public class SqlExceptionWithSource : Exception
     {
         public string Sql { get; }
 
-        public SqlExceptionWithSource(SqlException ex, string sql)
+        public SqlExceptionWithSource(Exception ex, string sql)
             : base($"{ex.Message} SQL:\n{sql}", ex)
         {
             Sql = sql;

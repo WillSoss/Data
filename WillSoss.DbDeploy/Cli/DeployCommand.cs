@@ -10,14 +10,24 @@ namespace WillSoss.DbDeploy.Cli
         private readonly string? _connectionString;
         private readonly Version? _version;
         private readonly bool _drop;
+        private readonly bool _unsafe;
+        private readonly bool _create;
+        private readonly bool _migrate;
+        private readonly bool _pre;
+        private readonly bool _post;
         private readonly ILogger _logger;
 
-        public DeployCommand(DatabaseBuilder builder, string? connectionString, Version? version, bool drop, ILogger<DeployCommand> logger)
+        public DeployCommand(DatabaseBuilder builder, string? connectionString, Version? version, bool drop, bool @unsafe, bool create, bool migrate, bool pre, bool post, ILogger<DeployCommand> logger)
         {
             _builder = builder;
             _connectionString = connectionString;
             _version = version;
             _drop = drop;
+            _unsafe = @unsafe;
+            _create = create;
+            _migrate = migrate;
+            _pre = pre;
+            _post = post;
             _logger = logger;
         }
 
@@ -32,47 +42,93 @@ namespace WillSoss.DbDeploy.Cli
                 return;
             }
 
-            var db = _builder.Build();
-
-            if (_drop)
+            MigrationPhase? phase;
+            if (_pre && _post)
             {
-                _logger.LogInformation("Dropping database {0} on {1}.", db.GetDatabaseName(), db.GetServerName());
-
-                await db.Drop();
+                _logger.LogError("The --pre and --post options cannot both be used.");
+                return;
+            }
+            else
+            {
+                phase = _pre ? MigrationPhase.Pre :
+                    _post ? MigrationPhase.Post :
+                    null;
             }
 
-            _logger.LogInformation("Creating database {0} on {1}.", db.GetDatabaseName(), db.GetServerName());
+            var db = _builder.Build();
 
-            await db.Create();
+            Console.WriteLine();
+            await ConsoleMessages.WriteDatabaseInfo(db);
+            Console.WriteLine();
 
-            if (_version is null)
-                _logger.LogInformation("Migrating database {0} on {1} to latest.", db.GetDatabaseName(), db.GetServerName());
+            try
+            {
 
-            else
-                _logger.LogInformation("Migrating database {0} on {1} to version {2}.", db.GetDatabaseName(), db.GetServerName(), _version);
+                if (_drop)
+                {
+                    if (_unsafe)
+                        _logger.LogWarning("UNSAFE IS ON: Production keyword protections are disabled.");
 
-            await db.MigrateTo(_version);
+                    Console.Write(" Dropping database...");
+    
+                    try
+                    {
+                        await db.Drop(_unsafe);
+                    }
+                    catch
+                    {
+                        ConsoleMessages.WriteColorLine(" FAILED ", ConsoleColor.White, ConsoleColor.Red);
+                        throw;
+                    }
 
-            _logger.LogInformation("Deployment complete for database {0} on {1}.", db.GetDatabaseName(), db.GetServerName());
-        }
+                    ConsoleMessages.WriteColorLine("Success", ConsoleColor.Green);
+                    Console.WriteLine();
+                }
 
-        internal static Command Create(IServiceCollection services)
-        {
-            var command = new Command("deploy", "Creates the database if it does not exist, then migrates to latest."); ;
+                if (_create)
+                {
+                    Console.Write(" Creating database...");
 
-            command.AddOption(CliOptions.ConnectionStringOption);
-            command.AddOption(CliOptions.VersionOption);
-            command.AddOption(CliOptions.DropOption);
+                    try
+                    { 
+                        await db.Create();
+                    }
+                    catch
+                    {
+                        ConsoleMessages.WriteColorLine(" FAILED ", ConsoleColor.White, ConsoleColor.Red);
+                        throw;
+                    }
 
-            command.SetHandler((cs, version, drop) => services.AddTransient<ICliCommand>(s => new DeployCommand(
-                s.GetRequiredService<DatabaseBuilder>(),
-                cs,
-                version,
-                drop,
-                s.GetRequiredService<ILogger<DeployCommand>>()
-                )), CliOptions.ConnectionStringOption, CliOptions.VersionOption, CliOptions.DropOption);
+                    ConsoleMessages.WriteColorLine("Success", ConsoleColor.Green);
+                    Console.WriteLine();
+                }
 
-            return command;
+                if (_migrate)
+                {
+                    await db.MigrateTo(_version, phase);
+                }
+            }
+            catch (SqlExceptionWithSource ex)
+            {
+                Console.WriteLine();
+                ConsoleMessages.WriteColorLine(ex.Message, ConsoleColor.Red);
+                Console.WriteLine();
+            }
+            catch (InvalidOperationException ex)
+            {
+                Console.WriteLine();
+                ConsoleMessages.WriteColorLine(ex.Message, ConsoleColor.Red);
+                Console.WriteLine();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine();
+                ConsoleMessages.WriteColorLine("   **   UNEXPECTED ERROR   **   ", ConsoleColor.White, ConsoleColor.Red);
+                ConsoleMessages.WriteColorLine(ex.ToString(), ConsoleColor.Red);
+                Console.WriteLine();
+            }
+
+            await ConsoleMessages.WriteDatabaseInfo(db);
         }
     }
 }

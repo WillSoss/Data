@@ -9,7 +9,7 @@ namespace WillSoss.DbDeploy
 
         private readonly Func<DatabaseBuilder, Database> _build;
         private readonly List<MigrationScript> _migrations = new();
-        private readonly List<string> _productionKeywords = new() { "prod", "live" };
+        private readonly List<string> _productionKeywords = new() { "prod", "production", "live" };
         private readonly Dictionary<string, (Script? Script, Func<Database, Task>? Action)> _actions = new();
 
         public Func<Database, Task<Script>> GetCreateScript;

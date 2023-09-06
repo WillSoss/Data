@@ -64,7 +64,16 @@ namespace WillSoss.DbDeploy.Sql
         protected internal override async Task<IEnumerable<Migration>> GetAppliedMigrations(DbConnection? db = null, DbTransaction? tx = null)
 		{
 			if (await Exists())
-				return await (db ?? GetConnection()).QueryAsync<Migration>(@"select * from cfg.migration_detail;", new { }, tx, CommandTimeout);
+			{
+				try
+				{
+					return await (db ?? GetConnection()).QueryAsync<Migration>(@"select * from cfg.migration_detail;", new { }, tx, CommandTimeout);
+				}
+				catch
+				{
+					return Enumerable.Empty<Migration>();
+				}
+            }
 			else
 				return Enumerable.Empty<Migration>();
         }

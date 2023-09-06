@@ -48,6 +48,9 @@ namespace WillSoss.DbDeploy
         public Task<Script> GetCreateScript() => _create(this);
         public Task<Script> GetDropScript() => _drop(this);
 
+        /// <summary>
+        /// Creates the database, if it does not exist, and adds the migrations schema.
+        /// </summary>
         public virtual async Task Create()
         {
             using (var db = GetConnectionWithoutDatabase())
@@ -60,11 +63,26 @@ namespace WillSoss.DbDeploy
                 await Task.Delay(TimeSpan.FromSeconds(_postCreateDelay));
             }
 
-            using (var db = GetConnection())
-            {
-                await ExecuteScriptAsync(GetMigrationsTableScript(), db, replacementTokens: GetTokens());
-            }
+            await AddMigrationsSchema();
         }
+
+        /// <summary>
+        /// Adds the migration schema to the database, if it does not exist.
+        /// </summary>
+        public async Task AddMigrationsSchema()
+        {
+            using var db = GetConnection();
+
+            await AddMigrationsSchema(db);
+        }
+
+        /// <summary>
+        /// Adds the migration schema to the database, if it does not exist.
+        /// </summary>
+        /// <param name="db">The connection to the database.</param>
+        /// <param name="tx">The transaction to take part in.</param>
+        public virtual async Task AddMigrationsSchema(DbConnection db, DbTransaction? tx = null) =>
+            await ExecuteScriptAsync(GetMigrationsTableScript(), db, replacementTokens: GetTokens());
 
         /// <summary>
         /// Builds the database using the <see cref="Migrations"/>.
@@ -292,6 +310,16 @@ namespace WillSoss.DbDeploy
             return Migrations.Where(s => !applied.Any(a => a.Version == s.Version && a.Phase == s.Phase && a.Number == s.Number));
         }
 
-        public async Task<Version?> GetVersion() => (await GetAppliedMigrations()).LastOrDefault()?.Version;
+        public async Task<Version?> GetVersion()
+        {
+            try
+            {
+                return (await GetAppliedMigrations()).LastOrDefault()?.Version;
+            }
+            catch
+            {
+                return null;
+            }
+        }
     }
 }

@@ -148,6 +148,7 @@
             }
 
             await ConsoleMessages.WriteDatabaseInfo(db);
+            Console.WriteLine();
         }
     }
 }

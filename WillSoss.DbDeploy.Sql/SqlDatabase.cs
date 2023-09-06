@@ -10,11 +10,11 @@ namespace WillSoss.DbDeploy.Sql
 		internal static readonly Assembly DefaultScriptAssembly = typeof(SqlDatabase).Assembly;
 		internal static readonly string DefaultScriptNamespace = typeof(SqlDatabase).Namespace!;
 
-		private static readonly Script OnPremiseCreateScript = new Script(DefaultScriptAssembly, DefaultScriptNamespace, "create.sql");
-		private static readonly Script OnPremiseDropScript = new Script(DefaultScriptAssembly, DefaultScriptNamespace, "drop.sql");
+		public static readonly Script OnPremiseCreateScript = new Script(DefaultScriptAssembly, DefaultScriptNamespace, "create.sql");
+		public static readonly Script OnPremiseDropScript = new Script(DefaultScriptAssembly, DefaultScriptNamespace, "drop.sql");
 
-        private static readonly Script AzureCreateScript = new(DefaultScriptAssembly, DefaultScriptNamespace, "create-az.sql");
-        private static readonly Script AzureDropScript = new(DefaultScriptAssembly, DefaultScriptNamespace, "drop-az.sql");
+        public static readonly Script AzureCreateScript = new(DefaultScriptAssembly, DefaultScriptNamespace, "create-az.sql");
+        public static readonly Script AzureDropScript = new(DefaultScriptAssembly, DefaultScriptNamespace, "drop-az.sql");
 
 		public static DatabaseBuilder CreateBuilder() =>
 			new DatabaseBuilder(b =>

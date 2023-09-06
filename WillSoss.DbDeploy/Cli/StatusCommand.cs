@@ -32,7 +32,6 @@ namespace WillSoss.DbDeploy.Cli
 
             var unapplied = await db.GetUnappliedMigrations();
 
-            Console.WriteLine($"Database {db.GetDatabaseName()} on server {db.GetServerName()} is at version {at!.Version} ({at} - {at.Description}).");
             Console.WriteLine();
 
             await ConsoleMessages.WriteDatabaseInfo(db);

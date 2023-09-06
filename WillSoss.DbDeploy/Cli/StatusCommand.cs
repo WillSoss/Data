@@ -37,6 +37,7 @@ namespace WillSoss.DbDeploy.Cli
             if (unapplied?.Count() == 0)
             {
                 Console.WriteLine("There are no unapplied migrations. The database is up to date.");
+                Console.WriteLine();
             }
             else
             {

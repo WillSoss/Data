@@ -1,10 +1,6 @@
-﻿using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
-using System.CommandLine;
-
-namespace WillSoss.DbDeploy.Cli
+﻿namespace WillSoss.DbDeploy.Cli
 {
-    internal class DeployCommand : RootCommand, ICliCommand
+    internal class DeployCommand : ICliCommand
     {
         private DatabaseBuilder _builder;
         private readonly string? _connectionString;
@@ -15,9 +11,8 @@ namespace WillSoss.DbDeploy.Cli
         private readonly bool _migrate;
         private readonly bool _pre;
         private readonly bool _post;
-        private readonly ILogger _logger;
 
-        public DeployCommand(DatabaseBuilder builder, string? connectionString, Version? version, bool drop, bool @unsafe, bool create, bool migrate, bool pre, bool post, ILogger<DeployCommand> logger)
+        public DeployCommand(DatabaseBuilder builder, string? connectionString, Version? version, bool drop, bool @unsafe, bool create, bool migrate, bool pre, bool post)
         {
             _builder = builder;
             _connectionString = connectionString;
@@ -28,7 +23,6 @@ namespace WillSoss.DbDeploy.Cli
             _migrate = migrate;
             _pre = pre;
             _post = post;
-            _logger = logger;
         }
 
         async Task ICliCommand.RunAsync(CancellationToken cancel)
@@ -38,14 +32,14 @@ namespace WillSoss.DbDeploy.Cli
 
             if (string.IsNullOrWhiteSpace(_builder.ConnectionString))
             {
-                _logger.LogError("Connection string is required. Configure the connection string in the app or use --connectionstring <connectionstring>.");
+                ConsoleMessages.WriteError("Connection string is required. Configure the connection string in the app or use --connectionstring <connectionstring>.");
                 return;
             }
 
             MigrationPhase? phase;
             if (_pre && _post)
             {
-                _logger.LogError("The --pre and --post options cannot both be used.");
+                ConsoleMessages.WriteError("The --pre and --post options cannot both be used.");
                 return;
             }
             else
@@ -67,7 +61,7 @@ namespace WillSoss.DbDeploy.Cli
                 if (_drop)
                 {
                     if (_unsafe)
-                        _logger.LogWarning("UNSAFE IS ON: Production keyword protections are disabled.");
+                        ConsoleMessages.WriteWarning("UNSAFE IS ON: Production keyword protections are disabled.");
 
                     Console.Write(" Dropping database...");
     
@@ -111,14 +105,39 @@ namespace WillSoss.DbDeploy.Cli
             catch (SqlExceptionWithSource ex)
             {
                 Console.WriteLine();
-                ConsoleMessages.WriteColorLine(ex.Message, ConsoleColor.Red);
+                ConsoleMessages.WriteColorLine($" {ex.Message}", ConsoleColor.Red);
                 Console.WriteLine();
             }
             catch (InvalidOperationException ex)
             {
                 Console.WriteLine();
-                ConsoleMessages.WriteColorLine(ex.Message, ConsoleColor.Red);
+                ConsoleMessages.WriteColorLine($" {ex.Message}", ConsoleColor.Red);
                 Console.WriteLine();
+            }
+            catch (MissingMigrationsException ex)
+            {
+                Console.WriteLine();
+                ConsoleMessages.WriteColorLine(" Cannot apply migrations to database. Migrations have been applied out of order and the following migrations are missing from the database:", ConsoleColor.Red);
+                Console.WriteLine();
+
+                foreach (var v in ex.MissingScripts.GroupBy(m => m.Version))
+                {
+                    Console.WriteLine($" Version {v.Key}");
+                    Console.WriteLine();
+
+                    foreach (var p in v.GroupBy(v => v.Phase))
+                    {
+                        Console.WriteLine($"   {p.Key}-deployment scripts");
+
+                        foreach (var script in p)
+                        {
+                            Console.Write($"     Script ");
+                            ConsoleMessages.WriteColorLine(script.FileName, ConsoleColor.Blue);
+                        }
+
+                        Console.WriteLine();
+                    }
+                }
             }
             catch (Exception ex)
             {

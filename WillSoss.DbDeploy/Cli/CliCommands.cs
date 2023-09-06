@@ -1,5 +1,4 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
 using System.CommandLine;
 
 namespace WillSoss.DbDeploy.Cli
@@ -21,8 +20,7 @@ namespace WillSoss.DbDeploy.Cli
                 false,
                 false,
                 false,
-                false,
-                s.GetRequiredService<ILogger<DeployCommand>>()
+                false
                 )), CliOptions.ConnectionString, CliOptions.Unsafe);
 
             return command;
@@ -44,8 +42,7 @@ namespace WillSoss.DbDeploy.Cli
                 true,
                 false,
                 false,
-                false,
-                s.GetRequiredService<ILogger<DeployCommand>>()
+                false
                 )), CliOptions.ConnectionString, CliOptions.Drop, CliOptions.Unsafe);
 
             return command;
@@ -68,8 +65,7 @@ namespace WillSoss.DbDeploy.Cli
                 false,
                 true,
                 pre,
-                post,
-                s.GetRequiredService<ILogger<DeployCommand>>()
+                post
                 )), CliOptions.ConnectionString, CliOptions.Version, CliOptions.Pre, CliOptions.Post);
 
             return command;
@@ -94,8 +90,7 @@ namespace WillSoss.DbDeploy.Cli
                 true,
                 true,
                 pre,
-                post,
-                s.GetRequiredService<ILogger<DeployCommand>>()
+                post
                 )), CliOptions.ConnectionString, CliOptions.Version, CliOptions.Drop, CliOptions.Unsafe, CliOptions.Pre, CliOptions.Post);
 
             return command;
@@ -107,8 +102,7 @@ namespace WillSoss.DbDeploy.Cli
 
             command.SetHandler((cs) => services.AddTransient<ICliCommand>(s => new StatusCommand(
                 s.GetRequiredService<DatabaseBuilder>(),
-                cs,
-                s.GetRequiredService<ILogger<StatusCommand>>()
+                cs
                 )), CliOptions.ConnectionString);
 
             return command;
@@ -128,8 +122,7 @@ namespace WillSoss.DbDeploy.Cli
             command.SetHandler((cs, action) => services.AddTransient<ICliCommand>(s => new RunCommand(
                 s.GetRequiredService<DatabaseBuilder>(),
                 cs,
-                action,
-                s.GetRequiredService<ILogger<RunCommand>>()
+                action
                 )), CliOptions.ConnectionString, arg);
 
             return command;
@@ -144,8 +137,7 @@ namespace WillSoss.DbDeploy.Cli
             command.SetHandler((cs, @unsafe) => services.AddTransient<ICliCommand>(s => new ResetCommand(
                 s.GetRequiredService<DatabaseBuilder>(),
                 cs,
-                @unsafe,
-                s.GetRequiredService<ILogger<ResetCommand>>()
+                @unsafe
                 )), CliOptions.ConnectionString, CliOptions.Unsafe);
 
             return command;

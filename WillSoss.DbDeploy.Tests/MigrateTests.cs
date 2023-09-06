@@ -87,31 +87,27 @@ namespace WillSoss.DbDeploy.Tests
         {
             // Arrange
 
-            // Apply migrations, but skip "1.1 one-one.sql"
-            var migrationsPath = Path.Combine(Directory.GetCurrentDirectory(), "Scripts - One Missing");
-
             var db = SqlDatabase.CreateBuilder()
                 .WithConnectionString(ConnectionString)
-                .AddMigrations(migrationsPath)
+                .AddMigrations(new[] { MultipleVersionsMixedPreAndPost.Last() })
                 .Build();
 
             await db.Create();
 
             await db.MigrateToLatest();
 
-            // Now set up for migrating again, but with the missing script
-            migrationsPath = Path.Combine(Directory.GetCurrentDirectory(), "Scripts");
-
             db = SqlDatabase.CreateBuilder()
                 .WithConnectionString(ConnectionString)
-                .AddMigrations(migrationsPath)
+                .AddMigrations(MultipleVersionsMixedPreAndPost)
                 .Build();
 
             // Act
-            var ex = await Assert.ThrowsAsync<MigrationsNotAppliedInOrderException>(db.MigrateToLatest);
+            var ex = await db.Invoking(db => db.MigrateToLatest())
+                .Should().ThrowAsync<MissingMigrationsException>();
 
             // Assert
-            ex.Should().NotBeNull();
+            ex.Subject.First().MissingScripts.Should()
+                .BeEquivalentTo(MultipleVersionsMixedPreAndPost.Take(MultipleVersionsMixedPreAndPost.Count() - 1));
         }
 
         [Fact]

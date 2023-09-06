@@ -1,6 +1,5 @@
-﻿using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
-using System.CommandLine;
+﻿using WillSoss.DbDeploy.Cli;
+using WillSoss.DbDeploy;
 
 namespace WillSoss.DbDeploy.Cli
 {
@@ -9,37 +8,74 @@ namespace WillSoss.DbDeploy.Cli
         private DatabaseBuilder _builder;
         private readonly string? _connectionString;
         private readonly bool _unsafe;
-        private readonly ILogger _logger;
 
-        public ResetCommand(DatabaseBuilder builder, string? connectionString, bool @unsafe, ILogger<ResetCommand> logger)
+        public ResetCommand(DatabaseBuilder builder, string? connectionString, bool @unsafe)
         {
             _builder = builder;
             _connectionString = connectionString;
             _unsafe = @unsafe;
-            _logger = logger;
         }
 
         async Task ICliCommand.RunAsync(CancellationToken cancel)
         {
-            if (!string.IsNullOrWhiteSpace(_connectionString))
-                _builder = _builder.WithConnectionString(_connectionString);
-
-            if (string.IsNullOrWhiteSpace(_builder.ConnectionString))
+            try
             {
-                _logger.LogError("Connection string is required. Configure the connection string in the app or use --connectionstring <connectionstring>.");
-                return;
+                if (!string.IsNullOrWhiteSpace(_connectionString))
+                    _builder = _builder.WithConnectionString(_connectionString);
+
+                if (string.IsNullOrWhiteSpace(_builder.ConnectionString))
+                {
+                    ConsoleMessages.WriteError(" Connection string is required. Configure the connection string in the app or use --connectionstring <connectionstring>.");
+                    return;
+                }
+
+                var db = _builder.Build();
+
+                Console.WriteLine();
+                await ConsoleMessages.WriteDatabaseInfo(db);
+                Console.WriteLine();
+
+                if (_unsafe)
+                {
+                    ConsoleMessages.WriteWarning(" UNSAFE IS ON: Production keyword protections are disabled for destructive actions.");
+                    Console.WriteLine();
+                }
+
+                try
+                {
+                    Console.Write($" Resetting database...");
+
+                    await db.Reset(_unsafe);
+
+                    ConsoleMessages.WriteColorLine("Success", ConsoleColor.Green);
+                    Console.WriteLine();
+                }
+                catch
+                {
+                    ConsoleMessages.WriteColorLine(" FAILED ", ConsoleColor.White, ConsoleColor.Red);
+                    throw;
+                }
+
             }
-
-            var db = _builder.Build();
-
-            if (_unsafe)
-                _logger.LogWarning("UNSAFE IS ON: Production keyword protections are disabled for destructive actions.");
-
-            _logger.LogInformation("Resetting database {0} on {1}.", db.GetDatabaseName(), db.GetServerName());
-
-            await db.Reset(_unsafe);
-
-            _logger.LogInformation("Reset complete for database {0} on {1}.", db.GetDatabaseName(), db.GetServerName());
+            catch (SqlExceptionWithSource ex)
+            {
+                Console.WriteLine();
+                ConsoleMessages.WriteColorLine($" {ex.Message}", ConsoleColor.Red);
+                Console.WriteLine();
+            }
+            catch (InvalidOperationException ex)
+            {
+                Console.WriteLine();
+                ConsoleMessages.WriteColorLine($" {ex.Message}", ConsoleColor.Red);
+                Console.WriteLine();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine();
+                ConsoleMessages.WriteColorLine("   **   UNEXPECTED ERROR   **   ", ConsoleColor.White, ConsoleColor.Red);
+                ConsoleMessages.WriteColorLine(ex.ToString(), ConsoleColor.Red);
+                Console.WriteLine();
+            }
         }
     }
 }

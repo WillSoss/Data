@@ -1,50 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Xml.Schema;
-
-namespace WillSoss.DbDeploy.Cli
+﻿namespace WillSoss.DbDeploy.Cli
 {
     internal static class ConsoleMessages
     {
-        internal static void WriteMigrationAppliedSuccessfully(MigrationScript script)
-        {
-            var foreground = Console.ForegroundColor;
-
-            Console.ForegroundColor = ConsoleColor.Green;
-
-            Console.Write($"✓ {script.FileName}");
-
-            Console.ForegroundColor = foreground;
-
-            Console.WriteLine();
-            Console.WriteLine();
-        }
-
-        internal static void WriteMigrationFailed(MigrationScript script, SqlExceptionWithSource ex)
-        {
-            var foreground = Console.ForegroundColor;
-            var background = Console.BackgroundColor;
-
-            Console.ForegroundColor = ConsoleColor.White;
-            Console.BackgroundColor = ConsoleColor.Red;
-
-            Console.Write($"× {script.FileName}");
-
-            Console.ForegroundColor = ConsoleColor.Red;
-            Console.BackgroundColor = background;
-
-            Console.WriteLine();
-
-            Console.Write(ex.Message);
-
-            Console.ForegroundColor = foreground;
-
-            Console.WriteLine();
-        }
-
         internal static void WriteColor(string text, ConsoleColor foreground, ConsoleColor? background = null)
         {
             var originalForeground = Console.ForegroundColor;
@@ -59,6 +16,10 @@ namespace WillSoss.DbDeploy.Cli
             Console.BackgroundColor = originalBackground;
         }
 
+        internal static void WriteError(string text) => WriteColorLine(text, ConsoleColor.Red);
+
+        internal static void WriteWarning(string text) => WriteColorLine(text, ConsoleColor.DarkYellow);
+
         internal static void WriteColorLine(string text, ConsoleColor foreground, ConsoleColor? background = null)
         {
             WriteColor(text, foreground, background);
@@ -66,6 +27,7 @@ namespace WillSoss.DbDeploy.Cli
         }
 
         private const int InnerWidth = 40;
+
         internal static async Task WriteDatabaseInfo(Database db)
         {
             StartBox("Database Status");

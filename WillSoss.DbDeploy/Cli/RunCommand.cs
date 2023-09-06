@@ -1,63 +1,98 @@
-﻿ using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
-using System.CommandLine;
-
-namespace WillSoss.DbDeploy.Cli
+﻿namespace WillSoss.DbDeploy.Cli
 {
     internal class RunCommand : ICliCommand
     {
         private DatabaseBuilder _builder;
         private readonly string? _connectionString;
         private readonly string? _action;
-        private readonly ILogger _logger;
 
-        public RunCommand(DatabaseBuilder builder, string? connectionString, string? action, ILogger<RunCommand> logger)
+        public RunCommand(DatabaseBuilder builder, string? connectionString, string? action)
         {
             _builder = builder;
             _connectionString = connectionString;
             _action = action;
-            _logger = logger;
         }
 
         async Task ICliCommand.RunAsync(CancellationToken cancel)
         {
-            if (!string.IsNullOrWhiteSpace(_connectionString))
-                _builder = _builder.WithConnectionString(_connectionString);
-
-            if (string.IsNullOrWhiteSpace(_builder.ConnectionString))
+            try
             {
-                _logger.LogError("Connection string is required. Configure the connection string in the app or use --connectionstring <connectionstring>.");
-                return;
+                if (!string.IsNullOrWhiteSpace(_connectionString))
+                    _builder = _builder.WithConnectionString(_connectionString);
+
+                if (string.IsNullOrWhiteSpace(_builder.ConnectionString))
+                {
+                    ConsoleMessages.WriteError(" Connection string is required. Configure the connection string in the app or use --connectionstring <connectionstring>.");
+                    return;
+                }
+
+                var db = _builder.Build();
+
+                Console.WriteLine();
+                await ConsoleMessages.WriteDatabaseInfo(db);
+                Console.WriteLine();
+
+                var scriptKey = db.NamedScripts.Keys.FirstOrDefault(k => k.Equals(_action, StringComparison.InvariantCultureIgnoreCase));
+                var actionKey = db.Actions.Keys.FirstOrDefault(k => k.Equals(_action, StringComparison.InvariantCultureIgnoreCase));
+
+                try
+                {
+                    if (scriptKey is not null)
+                    {
+                        var script = db.NamedScripts[scriptKey!];
+
+                        Console.Write($" Running script ");
+                        ConsoleMessages.WriteColor(script.FileName, ConsoleColor.Blue);
+                        Console.Write("...");
+
+                        await db.ExecuteScriptAsync(script, db.GetConnection());
+
+                        ConsoleMessages.WriteColorLine("Success", ConsoleColor.Green);
+                        Console.WriteLine();
+                    }
+                    else if (actionKey is not null)
+                    {
+                        var action = db.Actions[actionKey!];
+
+                        Console.Write($" Running action ");
+                        ConsoleMessages.WriteColor(actionKey, ConsoleColor.Blue);
+                        Console.Write("...");
+
+                        await action(db);
+
+                        ConsoleMessages.WriteColorLine("Success", ConsoleColor.Green);
+                        Console.WriteLine();
+                    }
+                    else
+                    {
+                        ConsoleMessages.WriteError($" A script or action named {_action} could not be found.");
+                        Console.WriteLine();
+                    }
+                }
+                catch
+                {
+                    ConsoleMessages.WriteColorLine(" FAILED ", ConsoleColor.White, ConsoleColor.Red);
+                    throw;
+                }
             }
-
-            var db = _builder.Build();
-
-            var scriptKey = db.NamedScripts.Keys.FirstOrDefault(k => k.Equals(_action, StringComparison.InvariantCultureIgnoreCase));
-            var actionKey = db.Actions.Keys.FirstOrDefault(k => k.Equals(_action, StringComparison.InvariantCultureIgnoreCase));
-
-            if (scriptKey is not null) 
+            catch (SqlExceptionWithSource ex)
             {
-                var script = db.NamedScripts[scriptKey!];
-
-                _logger.LogInformation("Running script {0} on database {1} on {2}.", script.FileName, db.GetDatabaseName(), db.GetServerName());
-
-                await db.ExecuteScriptAsync(script, db.GetConnection());
-
-                _logger.LogInformation("Script run complete on database {0} on {1}.", db.GetDatabaseName(), db.GetServerName());
+                Console.WriteLine();
+                ConsoleMessages.WriteColorLine($" {ex.Message}", ConsoleColor.Red);
+                Console.WriteLine();
             }
-            else if (actionKey is not null)
+            catch (InvalidOperationException ex)
             {
-                var action = db.Actions[actionKey!];
-
-                _logger.LogInformation("Running action {0} on database {1} on {2}.", _action, db.GetDatabaseName(), db.GetServerName());
-
-                await action(db);
-
-                _logger.LogInformation("Action complete on database {0} on {1}.", db.GetDatabaseName(), db.GetServerName());
+                Console.WriteLine();
+                ConsoleMessages.WriteColorLine($" {ex.Message}", ConsoleColor.Red);
+                Console.WriteLine();
             }
-            else
+            catch (Exception ex)
             {
-                _logger.LogError("A script or action named {0} could not be found.", _action);
+                Console.WriteLine();
+                ConsoleMessages.WriteColorLine("   **   UNEXPECTED ERROR   **   ", ConsoleColor.White, ConsoleColor.Red);
+                ConsoleMessages.WriteColorLine(ex.ToString(), ConsoleColor.Red);
+                Console.WriteLine();
             }
         }
     }

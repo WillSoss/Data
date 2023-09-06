@@ -9,7 +9,6 @@ await DatabaseCli
         .AddMigrations(Path.Combine(Directory.GetCurrentDirectory(), "Migrations"))
         .AddAction("method", db =>
         {
-            Console.WriteLine("Action call works");
             return Task.CompletedTask;
         }))
     .Build()

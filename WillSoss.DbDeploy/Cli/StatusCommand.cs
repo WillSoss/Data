@@ -1,20 +1,16 @@
-﻿using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
-using System.CommandLine;
+﻿using System.CommandLine;
 
 namespace WillSoss.DbDeploy.Cli
 {
-    internal class StatusCommand : RootCommand, ICliCommand
+    internal class StatusCommand : ICliCommand
     {
         private DatabaseBuilder _builder;
         private readonly string? _connectionString;
-        private readonly ILogger _logger;
 
-        public StatusCommand(DatabaseBuilder builder, string? connectionString, ILogger<StatusCommand> logger)
+        public StatusCommand(DatabaseBuilder builder, string? connectionString)
         {
             _builder = builder;
             _connectionString = connectionString;
-            _logger = logger;
         }
 
         async Task ICliCommand.RunAsync(CancellationToken cancel)
@@ -24,7 +20,7 @@ namespace WillSoss.DbDeploy.Cli
 
             if (string.IsNullOrWhiteSpace(_builder.ConnectionString))
             {
-                _logger.LogError("Connection string is required. Configure the connection string in the app or use --connectionstring <connectionstring>.");
+                ConsoleMessages.WriteError("Connection string is required. Configure the connection string in the app or use --connectionstring <connectionstring>.");
                 return;
             }
 
@@ -67,25 +63,5 @@ namespace WillSoss.DbDeploy.Cli
                 }
             }
         }
-
-
-
-        private void WriteCaution(string text)
-        {
-            var background = Console.BackgroundColor;
-            var foreground = Console.ForegroundColor;
-
-            Console.BackgroundColor = ConsoleColor.DarkYellow;
-            Console.ForegroundColor = ConsoleColor.White;
-
-            Console.Write($" !! CAUTION !! {text} ");
-
-            Console.BackgroundColor = background;
-            Console.ForegroundColor = foreground;
-
-            Console.WriteLine();
-            Console.WriteLine();
-        }
-
     }
 }

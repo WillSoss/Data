@@ -2,6 +2,7 @@
 using System.Data;
 using System.Data.Common;
 using System.Net.Security;
+using WillSoss.DbDeploy.Cli;
 
 namespace WillSoss.DbDeploy
 {
@@ -102,7 +103,7 @@ namespace WillSoss.DbDeploy
 
                 scriptsToApply = FilterScripts(scriptsToApply, phase);
 
-                await ExecuteScriptsAsync(scriptsToApply, db, tx, GetTokens());
+                await MigrateAsync(scriptsToApply, db, tx, GetTokens());
 
                 await tx.CommitAsync();
             }
@@ -151,7 +152,7 @@ namespace WillSoss.DbDeploy
         {
             using var db = GetConnection();
 
-            if (!@unsafe && IsProduction(db))
+            if (!@unsafe && IsProduction())
                 throw new InvalidOperationException("Cannot reset a production database. The connection string contains a production keyword.");
 
             if (ResetScript is null)
@@ -170,7 +171,7 @@ namespace WillSoss.DbDeploy
         {
             using var db = GetConnectionWithoutDatabase();
 
-            if (!@unsafe && IsProduction(db))
+            if (!@unsafe && IsProduction())
                 throw new InvalidOperationException("Cannot drop a production database. The connection string contains a production keyword.");
 
             await ExecuteScriptAsync(await GetDropScript(), db, replacementTokens: GetTokens());
@@ -186,34 +187,6 @@ namespace WillSoss.DbDeploy
             var cs = (db ?? GetConnection()).ConnectionString.ToLower();
 
             return _productionKeywords.Any(k => cs.Contains(k, StringComparison.InvariantCultureIgnoreCase));
-        }
-
-        public virtual async Task GetStatus(Version? version = null, MigrationPhase? phase = null)
-        {
-            using var db = GetConnection();
-
-            await db.EnsureOpenAsync();
-
-            using var tx = db.BeginTransaction();
-
-            var applied = await GetAppliedMigrations(db, tx);
-
-            var latestApplied = applied.OrderBy(a => a.Version).ThenBy(a => a.Phase).ThenBy(a => a.Number).LastOrDefault();
-
-            var scriptsToApply = Migrations.Where(s => !applied.Any(a => a.Version == s.Version && a.Phase == s.Phase && a.Number == s.Number));
-
-            if (version is not null)
-                scriptsToApply = scriptsToApply.Where(s => s.Version <= version);
-
-            if (scriptsToApply.Any())
-            {
-                var scriptVersion = scriptsToApply.OrderBy(a => a.Version).ThenBy(a => a.Phase).ThenBy(a => a.Number).FirstOrDefault();
-
-                if (latestApplied is not null && scriptVersion is not null && scriptVersion < latestApplied)
-                    throw new MigrationsNotAppliedInOrderException(latestApplied, scriptVersion);
-
-
-            }
         }
 
         public virtual async Task ExecuteNamedScript(string name)
@@ -240,12 +213,40 @@ namespace WillSoss.DbDeploy
             }
         }
 
-        public async Task ExecuteScriptsAsync(IEnumerable<MigrationScript> scripts, DbConnection db, DbTransaction? tx = null, Dictionary<string, string>? replacementTokens = null)
+        private async Task MigrateAsync(IEnumerable<MigrationScript> scripts, DbConnection db, DbTransaction? tx = null, Dictionary<string, string>? replacementTokens = null)
         {
-            foreach (var script in scripts)
+            foreach (var v in scripts.GroupBy(m => m.Version))
             {
-                await ExecuteScriptAsync(script, db, tx, replacementTokens);
-                await RecordMigration(script, db, tx);
+                Console.WriteLine($" Migrating to v{v.Key}");
+                Console.WriteLine();
+
+                foreach (var p in v.GroupBy(v => v.Phase))
+                {
+                    Console.WriteLine($"   {p.Key}-deployment scripts");
+
+                    foreach (var script in p)
+                    {
+                        Console.Write($"     Applying ");
+                        ConsoleMessages.WriteColor(script.FileName, ConsoleColor.Blue);
+                        Console.Write("...");
+
+                        try
+                        {
+                            await ExecuteScriptAsync(script, db, tx, replacementTokens);
+                        }
+                        catch (SqlExceptionWithSource)
+                        {
+                            ConsoleMessages.WriteColorLine(" FAILED ", ConsoleColor.White, ConsoleColor.Red);
+                            throw;
+                        }
+
+                        await RecordMigration(script, db, tx);
+
+                        ConsoleMessages.WriteColorLine("Success", ConsoleColor.Green);
+                    }
+
+                    Console.WriteLine();
+                }
             }
         }
 

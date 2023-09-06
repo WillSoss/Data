@@ -57,33 +57,78 @@ namespace WillSoss.DbDeploy.Cli
 
             var db = _builder.Build();
 
-            if (_drop)
+            Console.WriteLine();
+            await ConsoleMessages.WriteDatabaseInfo(db);
+            Console.WriteLine();
+
+            try
             {
-                if (_unsafe)
-                    _logger.LogWarning("UNSAFE IS ON: Production keyword protections are disabled.");
 
-                _logger.LogInformation("Dropping database {0} on {1}.", db.GetDatabaseName(), db.GetServerName());
+                if (_drop)
+                {
+                    if (_unsafe)
+                        _logger.LogWarning("UNSAFE IS ON: Production keyword protections are disabled.");
 
-                await db.Drop(_unsafe);
+                    Console.Write(" Dropping database...");
+    
+                    try
+                    {
+                        await db.Drop(_unsafe);
+                    }
+                    catch
+                    {
+                        ConsoleMessages.WriteColorLine(" FAILED ", ConsoleColor.White, ConsoleColor.Red);
+                        throw;
+                    }
+
+                    ConsoleMessages.WriteColorLine("Success", ConsoleColor.Green);
+                    Console.WriteLine();
+                }
+
+                if (_create)
+                {
+                    Console.Write(" Creating database...");
+
+                    try
+                    { 
+                        await db.Create();
+                    }
+                    catch
+                    {
+                        ConsoleMessages.WriteColorLine(" FAILED ", ConsoleColor.White, ConsoleColor.Red);
+                        throw;
+                    }
+
+                    ConsoleMessages.WriteColorLine("Success", ConsoleColor.Green);
+                    Console.WriteLine();
+                }
+
+                if (_migrate)
+                {
+                    await db.MigrateTo(_version, phase);
+                }
+            }
+            catch (SqlExceptionWithSource ex)
+            {
+                Console.WriteLine();
+                ConsoleMessages.WriteColorLine(ex.Message, ConsoleColor.Red);
+                Console.WriteLine();
+            }
+            catch (InvalidOperationException ex)
+            {
+                Console.WriteLine();
+                ConsoleMessages.WriteColorLine(ex.Message, ConsoleColor.Red);
+                Console.WriteLine();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine();
+                ConsoleMessages.WriteColorLine("   **   UNEXPECTED ERROR   **   ", ConsoleColor.White, ConsoleColor.Red);
+                ConsoleMessages.WriteColorLine(ex.ToString(), ConsoleColor.Red);
+                Console.WriteLine();
             }
 
-            if (_create)
-            {
-                _logger.LogInformation("Creating database {0} on {1}.", db.GetDatabaseName(), db.GetServerName());
-
-                await db.Create();
-            }
-
-            if (_migrate)
-            {
-                if (_version is null)
-                    _logger.LogInformation("Migrating database {0} on {1} to latest.", db.GetDatabaseName(), db.GetServerName());
-
-                else
-                    _logger.LogInformation("Migrating database {0} on {1} to version {2}.", db.GetDatabaseName(), db.GetServerName(), _version);
-
-                await db.MigrateTo(_version, phase);
-            }
+            await ConsoleMessages.WriteDatabaseInfo(db);
         }
     }
 }

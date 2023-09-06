@@ -39,8 +39,7 @@ namespace WillSoss.DbDeploy.Sql
             return new SqlConnection(builder.ToString());
         }
 
-        Task<bool> IsAzure(DbConnection? db = null) => (db ?? GetConnectionWithoutDatabase()).ExecuteScalarAsync<bool>("select iif(serverproperty('edition') = N'SQL Azure', 1, 0);", commandTimeout: CommandTimeout);
-
+        public Task<bool> IsAzure(DbConnection? db = null) => (db ?? GetConnectionWithoutDatabase()).ExecuteScalarAsync<bool>("select iif(serverproperty('edition') = N'SQL Azure', 1, 0);", commandTimeout: CommandTimeout);
 
         protected internal override string GetDatabaseName() => new SqlConnectionStringBuilder(ConnectionString).InitialCatalog;
 

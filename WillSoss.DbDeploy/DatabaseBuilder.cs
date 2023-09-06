@@ -64,7 +64,7 @@ namespace WillSoss.DbDeploy
             GetCreateScript = create;
         }
 
-        public DatabaseBuilder WithConnectionString(string connectionString)
+        public DatabaseBuilder WithConnectionString(string? connectionString)
         {
             ConnectionString = connectionString;
             return this;

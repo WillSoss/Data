@@ -103,11 +103,23 @@ namespace WillSoss.DbDeploy
             return this;
         }
 
+        public DatabaseBuilder WithCreateScript(Func<Database, Task<Script>> script)
+        {
+            GetCreateScript = script;
+            return this;
+        }
+
         public DatabaseBuilder WithDropScript(string path) => WithDropScript(new Script(path));
 
         public DatabaseBuilder WithDropScript(Script script)
         {
             GetDropScript = new Func<Database, Task<Script>>(db => Task.FromResult(script));
+            return this;
+        }
+
+        public DatabaseBuilder WithDropScript(Func<Database, Task<Script>> script)
+        {
+            GetDropScript = script;
             return this;
         }
 

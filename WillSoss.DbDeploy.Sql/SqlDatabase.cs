@@ -57,7 +57,7 @@ namespace WillSoss.DbDeploy.Sql
 				rev = script.Version.Revision,
 				phase = script.Phase,
 				number = script.Number,
-				desc = script.Name
+				desc = script.Description
 			}, tx, CommandTimeout);
         }
 

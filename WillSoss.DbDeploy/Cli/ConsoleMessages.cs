@@ -27,20 +27,51 @@
         }
 
         private const int InnerWidth = 40;
-
+        
+        internal static void WriteLogo()
+        {
+            Console.WriteLine();
+            WriteColorLine("""
+ ____    __       ____                    ___                            
+/\  _`\ /\ \     /\  _`\                 /\_ \                           
+\ \ \/\ \ \ \____\ \ \/\ \     __   _____\//\ \     ___   __  __         
+ \ \ \ \ \ \ '__`\\ \ \ \ \  /'__`\/\ '__`\\ \ \   / __`\/\ \/\ \        
+  \ \ \_\ \ \ \L\ \\ \ \_\ \/\  __/\ \ \L\ \\_\ \_/\ \L\ \ \ \_\ \       
+   \ \____/\ \_,__/ \ \____/\ \____\\ \ ,__//\____\ \____/\/`____ \      
+    \/___/  \/___/   \/___/  \/____/ \ \ \/ \/____/\/___/  `/___/> \     
+                                      \ \_\                   /\___/     
+                                       \/_/                   \/__/ 
+""", ConsoleColor.Magenta);
+            Console.WriteLine();
+        }
         internal static async Task WriteDatabaseInfo(Database db)
         {
-            StartBox("Database Status");
 
-            WriteBoxedText($" Host:             {db.GetServerName()}");
-            WriteBoxedText($" Database:         {db.GetDatabaseName()}");
-            WriteBoxedText($" Is Production:    {(db.IsProduction() ? "Yes" : "No")}");
-            WriteBoxedText($" Database Exists:  {((await db.Exists()) ? "Yes" : "No")}");
-            var v = await db.GetVersion();
-            var partial = (await db.GetUnappliedMigrations()).Any(m => m.Version == v);
-            WriteBoxedText($" Current Version:  {(v is null ? "---" : $"v{v}")}{(partial ? "-partial" : string.Empty)}");
+            Console.WriteLine(" Database Status");
+            Console.WriteLine();
 
-            EndBox();
+            Console.WriteLine($"   Host:             {db.GetServerName()}");
+            Console.WriteLine($"   Database:         {db.GetDatabaseName()}");
+            Console.WriteLine($"   Is Production:    {(db.IsProduction() ? "Yes" : "No")}");
+            Console.Write($"   Database Exists:  ");
+
+            bool exists = false;
+            try
+            {
+                exists = await db.Exists();
+                Console.WriteLine(exists ? "Yes" : "No");
+            }
+            catch
+            {
+                WriteColorLine("Could not determine (check host/credentials)", ConsoleColor.Red);
+            }
+
+            var v = exists ? await db.GetVersion() : null;
+            var partial = exists ? (await db.GetUnappliedMigrations()).Any(m => m.Version == v) : false;
+            Console.WriteLine($"   Current Version:  {(v is null ? "---" : $"v{v}")}{(partial ? "-partial" : string.Empty)}");
+            
+            Console.WriteLine();
+
         }
 
         private static void StartBox(string? title)
@@ -48,13 +79,6 @@
             Console.Write("╔");
             Console.Write(GetPadded($" {title} ", '═'));
             Console.WriteLine("╗");
-        }
-
-        private static void EndBox()
-        {
-            Console.Write("╚");
-            Console.Write(GetPadded(null, '═'));
-            Console.WriteLine("╝");
         }
 
         private static void WriteBoxedText(string text, int length = InnerWidth, bool truncate = true)

@@ -28,11 +28,8 @@ namespace WillSoss.DbDeploy.Cli
 
             var unapplied = await db.GetUnappliedMigrations();
 
-            Console.WriteLine();
-
+            ConsoleMessages.WriteLogo();
             await ConsoleMessages.WriteDatabaseInfo(db);
-
-            Console.WriteLine();
 
             if (unapplied?.Count() == 0)
             {

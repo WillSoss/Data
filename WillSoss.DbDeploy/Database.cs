@@ -103,6 +103,8 @@ namespace WillSoss.DbDeploy
 
             using var tx = db.BeginTransaction();
 
+            await AddMigrationsSchema(db, tx);
+
             var applied = await GetAppliedMigrations(db, tx);
 
             var latestApplied = applied.OrderBy(a => a.Version).ThenBy(a => a.Phase).ThenBy(a => a.Number).LastOrDefault();

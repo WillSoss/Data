@@ -15,6 +15,8 @@
 
         async Task ICliCommand.RunAsync(CancellationToken cancel)
         {
+            int exit = 0;
+
             try
             {
                 if (!string.IsNullOrWhiteSpace(_connectionString))
@@ -28,9 +30,8 @@
 
                 var db = _builder.Build();
 
-                Console.WriteLine();
+                ConsoleMessages.WriteLogo();
                 await ConsoleMessages.WriteDatabaseInfo(db);
-                Console.WriteLine();
 
                 var scriptKey = db.NamedScripts.Keys.FirstOrDefault(k => k.Equals(_action, StringComparison.InvariantCultureIgnoreCase));
                 var actionKey = db.Actions.Keys.FirstOrDefault(k => k.Equals(_action, StringComparison.InvariantCultureIgnoreCase));
@@ -80,12 +81,16 @@
                 Console.WriteLine();
                 ConsoleMessages.WriteColorLine($" {ex.Message}", ConsoleColor.Red);
                 Console.WriteLine();
+
+                exit = -1;
             }
             catch (InvalidOperationException ex)
             {
                 Console.WriteLine();
                 ConsoleMessages.WriteColorLine($" {ex.Message}", ConsoleColor.Red);
                 Console.WriteLine();
+
+                exit = -1;
             }
             catch (Exception ex)
             {
@@ -93,7 +98,11 @@
                 ConsoleMessages.WriteColorLine("   **   UNEXPECTED ERROR   **   ", ConsoleColor.White, ConsoleColor.Red);
                 ConsoleMessages.WriteColorLine(ex.ToString(), ConsoleColor.Red);
                 Console.WriteLine();
+
+                exit = -1;
             }
+
+            Environment.Exit(exit);
         }
     }
 }

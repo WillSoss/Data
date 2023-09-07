@@ -18,6 +18,8 @@ namespace WillSoss.DbDeploy.Cli
 
         async Task ICliCommand.RunAsync(CancellationToken cancel)
         {
+            int exit = 0;
+
             try
             {
                 if (!string.IsNullOrWhiteSpace(_connectionString))
@@ -31,9 +33,8 @@ namespace WillSoss.DbDeploy.Cli
 
                 var db = _builder.Build();
 
-                Console.WriteLine();
+                ConsoleMessages.WriteLogo();
                 await ConsoleMessages.WriteDatabaseInfo(db);
-                Console.WriteLine();
 
                 if (_unsafe)
                 {
@@ -62,12 +63,16 @@ namespace WillSoss.DbDeploy.Cli
                 Console.WriteLine();
                 ConsoleMessages.WriteColorLine($" {ex.Message}", ConsoleColor.Red);
                 Console.WriteLine();
+
+                exit = -1;
             }
             catch (InvalidOperationException ex)
             {
                 Console.WriteLine();
                 ConsoleMessages.WriteColorLine($" {ex.Message}", ConsoleColor.Red);
                 Console.WriteLine();
+
+                exit = -1;
             }
             catch (Exception ex)
             {
@@ -75,7 +80,11 @@ namespace WillSoss.DbDeploy.Cli
                 ConsoleMessages.WriteColorLine("   **   UNEXPECTED ERROR   **   ", ConsoleColor.White, ConsoleColor.Red);
                 ConsoleMessages.WriteColorLine(ex.ToString(), ConsoleColor.Red);
                 Console.WriteLine();
+
+                exit = -1;
             }
+
+            Environment.Exit(exit);
         }
     }
 }

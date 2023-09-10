@@ -21,7 +21,7 @@ namespace WillSoss.DbDeploy
                 throw new ArgumentNullException(nameof(path));
 
             if (!File.Exists(path))
-                throw new FileNotFoundException("File not found.", path);
+                throw new FileNotFoundException($"SQL script not found: {path}", path);
 
             using var stream = File.OpenRead(path);
 

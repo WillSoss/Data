@@ -82,7 +82,7 @@ namespace WillSoss.DbDeploy
         /// <param name="db">The connection to the database.</param>
         /// <param name="tx">The transaction to take part in.</param>
         public virtual async Task AddMigrationsSchema(DbConnection db, DbTransaction? tx = null) =>
-            await ExecuteScriptAsync(GetMigrationsTableScript(), db, replacementTokens: GetTokens());
+            await ExecuteScriptAsync(GetMigrationsTableScript(), db, tx, replacementTokens: GetTokens());
 
         /// <summary>
         /// Builds the database using the <see cref="Migrations"/>.

@@ -17,7 +17,18 @@ namespace WillSoss.DbDeploy
         public string? ConnectionString { get; private set; }
         public Script? ResetScript { get; private set; }
         public IReadOnlyDictionary<string, Script> NamedScripts => GetNamedScripts();
-        public IReadOnlyDictionary<string, Func<Database, Task>> Actions => _actions.Where(kv => kv.Value.Action is not null).ToDictionary(kv => kv.Key, kv => kv.Value.Action);
+        public IReadOnlyDictionary<string, Func<Database, Task>> Actions
+        {
+            get
+            {
+                Dictionary<string, Func<Database, Task>> actions = new();
+
+                foreach (var kv in _actions.Where(kv => kv.Value.Action is not null))
+                    actions.Add(kv.Key, kv.Value.Action!);
+                
+                return actions;
+            }
+        }
         public int CommandTimeout { get; private set; } = 90;
         public int PostCreateDelay { get; private set; } = 0;
         public int PostDropDelay { get; private set; } = 0;

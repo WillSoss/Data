@@ -209,7 +209,12 @@ namespace WillSoss.DbDeploy
             return _productionKeywords.Any(k => cs.Contains(k, StringComparison.InvariantCultureIgnoreCase));
         }
 
-        public virtual async Task ExecuteNamedScript(string name)
+        /// <summary>
+        /// Executes a named script.
+        /// </summary>
+        /// <param name="name">The name of the script to run.</param>
+        /// <param name="withoutTransaction">When true will run the script without starting a user transaction.</param>
+        public virtual async Task ExecuteNamedScript(string name, bool withoutTransaction = false)
         {
             if (!NamedScripts.ContainsKey(name))
                 throw new ArgumentException($"Script {name} not found.");
@@ -218,11 +223,19 @@ namespace WillSoss.DbDeploy
 
             await db.EnsureOpenAsync();
 
-            using var tx = db.BeginTransaction();
+            DbTransaction? tx = null;
+            if (!withoutTransaction)
+                tx = db.BeginTransaction();
 
-            await ExecuteScriptAsync(NamedScripts[name], db, tx, GetTokens());
-
-            await tx.CommitAsync();
+            try
+            {
+                await ExecuteScriptAsync(NamedScripts[name], db, tx, GetTokens());
+            }
+            finally
+            {
+                if (tx is not null)
+                    await tx.CommitAsync();
+            }
         }
 
         public async Task ExecuteScriptsAsync(IEnumerable<Script> scripts, DbConnection db, DbTransaction? tx = null, Dictionary<string, string>? replacementTokens = null)

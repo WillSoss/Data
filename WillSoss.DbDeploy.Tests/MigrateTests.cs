@@ -31,7 +31,7 @@ namespace WillSoss.DbDeploy.Tests
         }
 
         [Fact]
-        public async void ShouldApplyMigrations()
+        public async Task ShouldApplyMigrations()
         {
             // Arrange
             var migrationsPath = Path.Combine(Directory.GetCurrentDirectory(), "Scripts");
@@ -56,7 +56,7 @@ namespace WillSoss.DbDeploy.Tests
         }
 
         [Fact]
-        public async void ShouldApplyMigrationToVersion()
+        public async Task ShouldApplyMigrationToVersion()
         {
             // Arrange
             var migrationsPath = Path.Combine(Directory.GetCurrentDirectory(), "Scripts");
@@ -83,7 +83,7 @@ namespace WillSoss.DbDeploy.Tests
         }
 
         [Fact]
-        public async void ShouldNotApplySkippedMigrations()
+        public async Task ShouldNotApplySkippedMigrations()
         {
             // Arrange
 
@@ -111,7 +111,7 @@ namespace WillSoss.DbDeploy.Tests
         }
 
         [Fact]
-        public async void WithMultipleVersionsPreThenPost_ShouldApplyMigrations()
+        public async Task WithMultipleVersionsPreThenPost_ShouldApplyMigrations()
         {
             // Arrange
 
@@ -130,7 +130,7 @@ namespace WillSoss.DbDeploy.Tests
         }
 
         [Fact]
-        public async void WithPreFlagAndPreThenPost_ShouldApplyPreMigrations()
+        public async Task WithPreFlagAndPreThenPost_ShouldApplyPreMigrations()
         {
             // Arrange
 
@@ -149,7 +149,7 @@ namespace WillSoss.DbDeploy.Tests
         }
 
         [Fact]
-        public async void WithPreFlagAndOnlyPost_ShouldApplyZeroMigrations()
+        public async Task WithPreFlagAndOnlyPost_ShouldApplyZeroMigrations()
         {
             // Arrange
 
@@ -168,7 +168,7 @@ namespace WillSoss.DbDeploy.Tests
         }
 
         [Fact]
-        public async void WithPreFlagAndPreAfterPost_ShouldNotApplyMigrations()
+        public async Task WithPreFlagAndPreAfterPost_ShouldNotApplyMigrations()
         {
             // Arrange
 
@@ -187,7 +187,7 @@ namespace WillSoss.DbDeploy.Tests
         }
 
         [Fact]
-        public async void WithPreFlagAndPostThenPre_ShouldNotApplyMigrations()
+        public async Task WithPreFlagAndPostThenPre_ShouldNotApplyMigrations()
         {
             // Arrange
 
@@ -206,7 +206,7 @@ namespace WillSoss.DbDeploy.Tests
         }
 
         [Fact]
-        public async void WithPostFlagAndOnlyPost_ShouldApplyMigrations()
+        public async Task WithPostFlagAndOnlyPost_ShouldApplyMigrations()
         {
             // Arrange
 
@@ -225,7 +225,7 @@ namespace WillSoss.DbDeploy.Tests
         }
 
         [Fact]
-        public async void WithPostFlagAndOnlyPre_ShouldNotApplyMigrations()
+        public async Task WithPostFlagAndOnlyPre_ShouldNotApplyMigrations()
         {
             // Arrange
 
@@ -244,7 +244,7 @@ namespace WillSoss.DbDeploy.Tests
         }
 
         [Fact]
-        public async void WithPostFlagAndPostThenPre_ShouldNotApplyMigrations()
+        public async Task WithPostFlagAndPostThenPre_ShouldNotApplyMigrations()
         {
             // Arrange
 

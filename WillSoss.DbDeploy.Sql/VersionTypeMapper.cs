@@ -7,7 +7,7 @@ namespace WillSoss.DbDeploy.Sql
     {
         public override Version Parse(object value) => Version.Parse((string)value);
 
-        public override void SetValue(IDbDataParameter parameter, Version value)
+        public override void SetValue(IDbDataParameter parameter, Version? value)
         {
             throw new NotImplementedException();
         }

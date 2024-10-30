@@ -111,6 +111,38 @@ namespace WillSoss.DbDeploy.Tests
         }
 
         [Fact]
+        public async Task ShouldApplyMissingMigrations()
+        {
+            // Arrange
+
+            var db = SqlDatabase.CreateBuilder()
+                .WithConnectionString(ConnectionString)
+                .AddMigrations(new[] { MultipleVersionsMixedPreAndPost.Last() })
+                .Build();
+
+            await db.Create();
+
+            await db.MigrateToLatest();
+
+            db = SqlDatabase.CreateBuilder()
+                .WithConnectionString(ConnectionString)
+                .AddMigrations(MultipleVersionsMixedPreAndPost)
+                .Build();
+
+
+            // Act
+            var count = await db.MigrateToLatest(true);
+
+            // Assert
+            count.Should().Be(3);
+
+            var migrations = await db.GetAppliedMigrations(db.GetConnection());
+
+            // 4 scripts + database create
+            migrations.Count().Should().Be(5);
+        }
+
+        [Fact]
         public async Task WithMultipleVersionsPreThenPost_ShouldApplyMigrations()
         {
             // Arrange

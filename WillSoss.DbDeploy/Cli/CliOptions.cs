@@ -25,6 +25,8 @@ namespace WillSoss.DbDeploy.Cli
 
         internal static Option<bool> Unsafe = new Option<bool>(new[] { "--unsafe" }, "Use with extreme caution. Disables destructive action prevention for production databases using keyword protection.");
 
+        internal static Option<bool> ApplyMissing = new Option<bool>(new[] { "--applymissing", "--relax" }, "Use with caution. Allows migrations with a version number less than the current database version to be applied to the database.");
+
         internal static Option<bool> Pre = new Option<bool>(new[] { "--pre" }, "Optional. Limits migrations to pre-deployment migration scripts.");
 
         internal static Option<bool> Post = new Option<bool>(new[] { "--post" }, "Optional. Limits migrations to post-deployment migration scripts.");

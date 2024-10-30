@@ -87,15 +87,21 @@ namespace WillSoss.DbDeploy
         /// <summary>
         /// Builds the database using the <see cref="Migrations"/>.
         /// </summary>
+        /// <param name="applyMissing">When true, allows missing migrations to be applied to the database,
+        /// otherwise an exception is thrown if there are migrations to apply with a version number less than
+        /// the current database version.</param>
         /// <returns>The number of scripts applied to the database.</returns>
-        public virtual async Task<int> MigrateToLatest() => await MigrateTo(null, null);
+        public virtual async Task<int> MigrateToLatest(bool applyMissing = false) => await MigrateTo(null, null, applyMissing);
 
         /// <summary>
         /// Builds the database using the <see cref="Migrations"/>.
         /// </summary>
         /// <param name="version">Applies builds scripts up to the specified version.</param>
+        /// <param name="applyMissing">When true, allows missing migrations to be applied to the database,
+        /// otherwise an exception is thrown if there are migrations to apply with a version number less than
+        /// the current database version.</param>
         /// <returns>The number of scripts applied to the database.</returns>
-        public virtual async Task<int> MigrateTo(Version? version, MigrationPhase? phase = null)
+        public virtual async Task<int> MigrateTo(Version? version, MigrationPhase? phase = null, bool applyMissing = false)
         {
             using var db = GetConnection();
 
@@ -118,7 +124,7 @@ namespace WillSoss.DbDeploy
             {
                 var scriptVersion = scriptsToApply.OrderBy(a => a.Version).ThenBy(a => a.Phase).ThenBy(a => a.Number).FirstOrDefault();
 
-                if (latestApplied is not null && scriptVersion is not null && scriptVersion < latestApplied)
+                if (!applyMissing && latestApplied is not null && scriptVersion is not null && scriptVersion < latestApplied)
                     throw new MissingMigrationsException(scriptsToApply.Where(s => s < latestApplied));
 
                 scriptsToApply = FilterScripts(scriptsToApply, phase);

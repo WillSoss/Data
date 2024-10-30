@@ -20,6 +20,7 @@ namespace WillSoss.DbDeploy.Cli
                 false,
                 false,
                 false,
+                false,
                 false
                 )), CliOptions.ConnectionString, CliOptions.Unsafe);
 
@@ -42,6 +43,7 @@ namespace WillSoss.DbDeploy.Cli
                 true,
                 false,
                 false,
+                false,
                 false
                 )), CliOptions.ConnectionString, CliOptions.Drop, CliOptions.Unsafe);
 
@@ -53,10 +55,11 @@ namespace WillSoss.DbDeploy.Cli
             var command = new Command("migrate", "Migrates to the specified version, or latest if no version is specified."); ;
 
             command.AddOption(CliOptions.Version);
+            command.AddOption(CliOptions.ApplyMissing);
             command.AddOption(CliOptions.Pre);
             command.AddOption(CliOptions.Post);
 
-            command.SetHandler((cs, version, pre, post) => services.AddTransient<ICliCommand>(s => new DeployCommand(
+            command.SetHandler((cs, version, applyMissing, pre, post) => services.AddTransient<ICliCommand>(s => new DeployCommand(
                 s.GetRequiredService<DatabaseBuilder>(),
                 cs,
                 version,
@@ -64,9 +67,10 @@ namespace WillSoss.DbDeploy.Cli
                 false,
                 false,
                 true,
+                applyMissing,
                 pre,
                 post
-                )), CliOptions.ConnectionString, CliOptions.Version, CliOptions.Pre, CliOptions.Post);
+                )), CliOptions.ConnectionString, CliOptions.Version, CliOptions.ApplyMissing, CliOptions.Pre, CliOptions.Post);
 
             return command;
         }
@@ -78,10 +82,11 @@ namespace WillSoss.DbDeploy.Cli
             command.AddOption(CliOptions.Version);
             command.AddOption(CliOptions.Drop);
             command.AddOption(CliOptions.Unsafe);
+            command.AddOption(CliOptions.ApplyMissing);
             command.AddOption(CliOptions.Pre);
             command.AddOption(CliOptions.Post);
 
-            command.SetHandler((cs, version, drop, @unsafe, pre, post) => services.AddTransient<ICliCommand>(s => new DeployCommand(
+            command.SetHandler((cs, version, drop, @unsafe, applyMissing, pre, post) => services.AddTransient<ICliCommand>(s => new DeployCommand(
                 s.GetRequiredService<DatabaseBuilder>(),
                 cs,
                 version,
@@ -89,9 +94,10 @@ namespace WillSoss.DbDeploy.Cli
                 @unsafe,
                 true,
                 true,
+                applyMissing,
                 pre,
                 post
-                )), CliOptions.ConnectionString, CliOptions.Version, CliOptions.Drop, CliOptions.Unsafe, CliOptions.Pre, CliOptions.Post);
+                )), CliOptions.ConnectionString, CliOptions.Version, CliOptions.Drop, CliOptions.Unsafe, CliOptions.ApplyMissing, CliOptions.Pre, CliOptions.Post);
 
             return command;
         }

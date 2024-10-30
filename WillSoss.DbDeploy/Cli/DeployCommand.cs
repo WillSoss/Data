@@ -9,10 +9,11 @@
         private readonly bool _unsafe;
         private readonly bool _create;
         private readonly bool _migrate;
+        private readonly bool _applyMissing;
         private readonly bool _pre;
         private readonly bool _post;
 
-        public DeployCommand(DatabaseBuilder builder, string? connectionString, Version? version, bool drop, bool @unsafe, bool create, bool migrate, bool pre, bool post)
+        public DeployCommand(DatabaseBuilder builder, string? connectionString, Version? version, bool drop, bool @unsafe, bool create, bool migrate, bool applyMissing, bool pre, bool post)
         {
             _builder = builder;
             _connectionString = connectionString;
@@ -21,6 +22,7 @@
             _unsafe = @unsafe;
             _create = create;
             _migrate = migrate;
+            _applyMissing = applyMissing;
             _pre = pre;
             _post = post;
         }
@@ -100,7 +102,7 @@
 
                 if (_migrate)
                 {
-                    await db.MigrateTo(_version, phase);
+                    await db.MigrateTo(_version, phase, _applyMissing);
                 }
             }
             catch (SqlExceptionWithSource ex)

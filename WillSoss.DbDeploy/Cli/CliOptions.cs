@@ -7,6 +7,9 @@ namespace WillSoss.DbDeploy.Cli
         internal static Option<string?> ConnectionString = new Option<string?>(new[] { "--connectionstring", "-c" },
             description: "Connection string of the database to modify. Optional when a default is supplied by the application.");
 
+        internal static Option<string?> ConnectionStringName = new Option<string?>(new[] { "--name", "-n" },
+            description: "Name of the connection string to the database to modify.");
+
         internal static Option<Version?> Version = new Option<Version?>(new[] { "--version", "-v" },
             description: "Optional. Migrates to the specified version instead of latest.",
             parseArgument: result =>

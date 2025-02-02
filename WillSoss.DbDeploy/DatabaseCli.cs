@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+﻿using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using System.CommandLine;
 using System.CommandLine.Builder;
@@ -13,10 +14,10 @@ namespace WillSoss.DbDeploy
         {
             return Host
             .CreateDefaultBuilder()
-            .ConfigureServices(services =>
+            .ConfigureServices((context, services) =>
             {
                 // Parses the command line and registes the corresponding CliCommand
-                GetCommandLineBuilder(services)
+                GetCommandLineBuilder(context, services)
                     .UseParseErrorReporting()
                     .Build()
                     .Invoke(args);
@@ -42,18 +43,18 @@ namespace WillSoss.DbDeploy
                 await command.RunAsync(cancellationToken);
         }
 
-        static CommandLineBuilder GetCommandLineBuilder(IServiceCollection services)
+        static CommandLineBuilder GetCommandLineBuilder(HostBuilderContext context, IServiceCollection services)
         {
             var root = new RootCommand();
             root.AddGlobalOption(CliOptions.ConnectionString);
 
-            root.AddCommand(CliCommands.Status(services));
-            root.AddCommand(CliCommands.Drop(services));
-            root.AddCommand(CliCommands.Create(services));
-            root.AddCommand(CliCommands.Migrate(services));
-            root.AddCommand(CliCommands.Deploy(services));
-            root.AddCommand(CliCommands.Reset(services));
-            root.AddCommand(CliCommands.Run(services));
+            root.AddCommand(CliCommands.Status(context, services));
+            root.AddCommand(CliCommands.Drop(context, services));
+            root.AddCommand(CliCommands.Create(context, services));
+            root.AddCommand(CliCommands.Migrate(context, services));
+            root.AddCommand(CliCommands.Deploy(context, services));
+            root.AddCommand(CliCommands.Reset(context, services));
+            root.AddCommand(CliCommands.Run(context, services));
 
             return new CommandLineBuilder(root);
         }

@@ -15,6 +15,7 @@ namespace WillSoss.DbDeploy
         public Func<Database, Task<Script>> GetCreateScript;
         public Func<Database, Task<Script>> GetDropScript;
         public string? ConnectionString { get; private set; }
+        public string? ConnectionStringName { get; private set; }
         public Script? ResetScript { get; private set; }
         public IReadOnlyDictionary<string, Script> NamedScripts => GetNamedScripts();
         public IReadOnlyDictionary<string, Func<Database, Task>> Actions
@@ -78,6 +79,12 @@ namespace WillSoss.DbDeploy
         public DatabaseBuilder WithConnectionString(string? connectionString)
         {
             ConnectionString = connectionString;
+            return this;
+        }
+
+        public DatabaseBuilder WithConnectionStringName(string? connectionStringName)
+        {
+            ConnectionStringName = connectionStringName;
             return this;
         }
 

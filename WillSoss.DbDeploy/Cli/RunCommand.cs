@@ -1,13 +1,18 @@
-﻿namespace WillSoss.DbDeploy.Cli
+﻿using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Hosting;
+
+namespace WillSoss.DbDeploy.Cli
 {
     internal class RunCommand : ICliCommand
     {
+        private HostBuilderContext _context;
         private DatabaseBuilder _builder;
         private readonly string? _connectionString;
         private readonly string? _action;
 
-        public RunCommand(DatabaseBuilder builder, string? connectionString, string? action)
+        public RunCommand(HostBuilderContext context, DatabaseBuilder builder, string? connectionString, string? action)
         {
+            _context = context;
             _builder = builder;
             _connectionString = connectionString;
             _action = action;
@@ -21,6 +26,10 @@
             {
                 if (!string.IsNullOrWhiteSpace(_connectionString))
                     _builder = _builder.WithConnectionString(_connectionString);
+
+                if (string.IsNullOrWhiteSpace(_builder.ConnectionString) &&
+                    !string.IsNullOrWhiteSpace(_builder.ConnectionStringName))
+                    _builder = _builder.WithConnectionString(_context.Configuration.GetConnectionString(_builder.ConnectionStringName!));
 
                 if (string.IsNullOrWhiteSpace(_builder.ConnectionString))
                 {

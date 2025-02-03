@@ -5,7 +5,11 @@
       "distributionName": ""
     },
     "Run TestCli": {
-      "commandName": "Project"
+      "commandName": "Project",
+      "commandLineArgs": "migrate",
+      "environmentVariables": {
+        "ConnectionStrings_database": "dbconnectionstring"
+      }
     }
   }
 }

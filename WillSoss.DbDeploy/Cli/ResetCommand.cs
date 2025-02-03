@@ -1,16 +1,18 @@
-﻿using WillSoss.DbDeploy.Cli;
-using WillSoss.DbDeploy;
+﻿using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Hosting;
 
 namespace WillSoss.DbDeploy.Cli
 {
     internal class ResetCommand : ICliCommand
     {
+        private HostBuilderContext _context;
         private DatabaseBuilder _builder;
         private readonly string? _connectionString;
         private readonly bool _unsafe;
 
-        public ResetCommand(DatabaseBuilder builder, string? connectionString, bool @unsafe)
+        public ResetCommand(HostBuilderContext context, DatabaseBuilder builder, string? connectionString, bool @unsafe)
         {
+            _context = context;
             _builder = builder;
             _connectionString = connectionString;
             _unsafe = @unsafe;
@@ -24,6 +26,10 @@ namespace WillSoss.DbDeploy.Cli
             {
                 if (!string.IsNullOrWhiteSpace(_connectionString))
                     _builder = _builder.WithConnectionString(_connectionString);
+
+                if (string.IsNullOrWhiteSpace(_builder.ConnectionString) &&
+                    !string.IsNullOrWhiteSpace(_builder.ConnectionStringName))
+                    _builder = _builder.WithConnectionString(_context.Configuration.GetConnectionString(_builder.ConnectionStringName!));
 
                 if (string.IsNullOrWhiteSpace(_builder.ConnectionString))
                 {

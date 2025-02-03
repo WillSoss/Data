@@ -14,6 +14,7 @@ namespace WillSoss.DbDeploy.Cli
             command.AddOption(CliOptions.Unsafe);
 
             command.SetHandler((cs, name, @unsafe) => services.AddTransient<ICliCommand>(s => new DeployCommand(
+                context,
                 s.GetRequiredService<DatabaseBuilder>(),
                 !string.IsNullOrWhiteSpace(cs) ? cs : GetConnectionString(context, name),
                 null,
@@ -37,6 +38,7 @@ namespace WillSoss.DbDeploy.Cli
             command.AddOption(CliOptions.Unsafe);
 
             command.SetHandler((cs, name, drop, @unsafe) => services.AddTransient<ICliCommand>(s => new DeployCommand(
+                context,
                 s.GetRequiredService<DatabaseBuilder>(),
                 !string.IsNullOrWhiteSpace(cs) ? cs : GetConnectionString(context, name),
                 null,
@@ -62,6 +64,7 @@ namespace WillSoss.DbDeploy.Cli
             command.AddOption(CliOptions.Post);
 
             command.SetHandler((cs, name, version, applyMissing, pre, post) => services.AddTransient<ICliCommand>(s => new DeployCommand(
+                context,
                 s.GetRequiredService<DatabaseBuilder>(),
                 !string.IsNullOrWhiteSpace(cs) ? cs : GetConnectionString(context, name),
                 version,
@@ -89,6 +92,7 @@ namespace WillSoss.DbDeploy.Cli
             command.AddOption(CliOptions.Post);
 
             command.SetHandler((cs, name, version, drop, @unsafe, applyMissing, pre, post) => services.AddTransient<ICliCommand>(s => new DeployCommand(
+                context,
                 s.GetRequiredService<DatabaseBuilder>(),
                 !string.IsNullOrWhiteSpace(cs) ? cs : GetConnectionString(context, name),
                 version,
@@ -128,6 +132,7 @@ namespace WillSoss.DbDeploy.Cli
             command.AddArgument(arg);
 
             command.SetHandler((cs, name, action) => services.AddTransient<ICliCommand>(s => new RunCommand(
+                context,
                 s.GetRequiredService<DatabaseBuilder>(),
                 !string.IsNullOrWhiteSpace(cs) ? cs : GetConnectionString(context, name),
                 action
@@ -143,6 +148,7 @@ namespace WillSoss.DbDeploy.Cli
             command.AddOption(CliOptions.Unsafe);
 
             command.SetHandler((cs, name, @unsafe) => services.AddTransient<ICliCommand>(s => new ResetCommand(
+                context,
                 s.GetRequiredService<DatabaseBuilder>(),
                 !string.IsNullOrWhiteSpace(cs) ? cs : GetConnectionString(context, name),
                 @unsafe

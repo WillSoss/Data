@@ -2,7 +2,6 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using System.CommandLine;
-using System.Xml.Linq;
 
 namespace WillSoss.DbDeploy.Cli
 {
@@ -16,7 +15,7 @@ namespace WillSoss.DbDeploy.Cli
 
             command.SetHandler((cs, name, @unsafe) => services.AddTransient<ICliCommand>(s => new DeployCommand(
                 s.GetRequiredService<DatabaseBuilder>(),
-                cs ?? GetConnectionString(context, name),
+                !string.IsNullOrWhiteSpace(cs) ? cs : GetConnectionString(context, name),
                 null,
                 true,
                 @unsafe,
@@ -39,7 +38,7 @@ namespace WillSoss.DbDeploy.Cli
 
             command.SetHandler((cs, name, drop, @unsafe) => services.AddTransient<ICliCommand>(s => new DeployCommand(
                 s.GetRequiredService<DatabaseBuilder>(),
-                cs ?? GetConnectionString(context, name),
+                !string.IsNullOrWhiteSpace(cs) ? cs : GetConnectionString(context, name),
                 null,
                 drop,
                 @unsafe,
@@ -64,7 +63,7 @@ namespace WillSoss.DbDeploy.Cli
 
             command.SetHandler((cs, name, version, applyMissing, pre, post) => services.AddTransient<ICliCommand>(s => new DeployCommand(
                 s.GetRequiredService<DatabaseBuilder>(),
-                cs ?? GetConnectionString(context, name),
+                !string.IsNullOrWhiteSpace(cs) ? cs : GetConnectionString(context, name),
                 version,
                 false,
                 false,
@@ -91,7 +90,7 @@ namespace WillSoss.DbDeploy.Cli
 
             command.SetHandler((cs, name, version, drop, @unsafe, applyMissing, pre, post) => services.AddTransient<ICliCommand>(s => new DeployCommand(
                 s.GetRequiredService<DatabaseBuilder>(),
-                cs ?? GetConnectionString(context, name),
+                !string.IsNullOrWhiteSpace(cs) ? cs : GetConnectionString(context, name),
                 version,
                 drop,
                 @unsafe,
@@ -111,7 +110,7 @@ namespace WillSoss.DbDeploy.Cli
 
             command.SetHandler((cs, name) => services.AddTransient<ICliCommand>(s => new StatusCommand(
                 s.GetRequiredService<DatabaseBuilder>(),
-                cs ?? GetConnectionString(context, name)
+                !string.IsNullOrWhiteSpace(cs) ? cs : GetConnectionString(context, name)
                 )), CliOptions.ConnectionString, CliOptions.ConnectionStringName);
 
             return command;
@@ -130,7 +129,7 @@ namespace WillSoss.DbDeploy.Cli
 
             command.SetHandler((cs, name, action) => services.AddTransient<ICliCommand>(s => new RunCommand(
                 s.GetRequiredService<DatabaseBuilder>(),
-                cs ?? GetConnectionString(context, name),
+                !string.IsNullOrWhiteSpace(cs) ? cs : GetConnectionString(context, name),
                 action
                 )), CliOptions.ConnectionString, CliOptions.ConnectionStringName, arg);
 
@@ -145,7 +144,7 @@ namespace WillSoss.DbDeploy.Cli
 
             command.SetHandler((cs, name, @unsafe) => services.AddTransient<ICliCommand>(s => new ResetCommand(
                 s.GetRequiredService<DatabaseBuilder>(),
-                cs ?? GetConnectionString(context, name),
+                !string.IsNullOrWhiteSpace(cs) ? cs : GetConnectionString(context, name),
                 @unsafe
                 )), CliOptions.ConnectionString, CliOptions.ConnectionStringName, CliOptions.Unsafe);
 
